@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client-Side Family Tree</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Cytoscape.js library -->
+    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+    <!-- Optional: Layout extension (dagre) for better tree layout -->
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+
+</head>
+<body>
+    <h1>族谱 Family Tree</h1>
+
+    <div class="controls">
+        <label for="fileInput">导入族谱:</label>
+        <input type="file" id="fileInput" accept=".json">
+
+        <input type="text" id="searchInput" placeholder="查询名字...">
+        <button id="searchButton">查询</button>
+
+        <button id="saveButton">保存族谱</button>
+        <button id="addPersonButton">添加新人</button>
+    </div>
+
+    <div id="searchResults"></div>
+
+    <div class="main-container">
+        <div id="cy"></div> <!-- Cytoscape visualization container -->
+        <div id="detailsPanel">
+            <h2>详情 / 编辑</h2>
+            <p>(从图谱上或查询结果中选择一个成员)</p>
+            <div id="editForm" class="hidden">
+                <label for="personId">ID:</label>
+                <input type="text" id="personId" readonly> <br>
+
+                <div class="name-group">
+                    <label for="nameType">Name Type:</label>
+                    <select id="nameType">
+                        <option value="birth">出生</option>
+                        <option value="married">结婚</option>
+                        <option value="adopted">领养</option>
+                        <option value="nickname">别名</option>
+                    </select> <br>
+
+                    <label for="personSurname">姓氏:</label>
+                    <input type="text" id="personSurname"> <br>
+
+                    <label for="personGivenName">名字:</label>
+                    <input type="text" id="personGivenName"> <br>
+
+                    <button id="addNameButton" type="button">添加其他名字</button>
+                </div>
+
+                <div id="additionalNames"></div>
+
+                <label for="personGender">性别:</label>
+                <select id="personGender">
+                    <option value="">选择...</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                    <option value="other">不详</option>
+                </select> <br>
+
+                <div class="events-section">
+                    <h3>事件</h3>
+                    <div id="eventsContainer">
+                        <!-- Existing events will be added here dynamically -->
+                    </div>
+                    <button id="addEventButton" type="button">添加事件</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="parentFamilySelect">父母家庭:</label>
+                    <select id="parentFamilySelect"></select>
+                </div>
+                <div class="form-group">
+                    <label for="spouseFamilySelect">婚配家庭:</label>
+                    <select id="spouseFamilySelect"></select>
+                </div>
+
+                <button id="saveChangesButton">保存</button>
+                <button id="cancelEditButton">放弃</button>
+                <p id="editStatus"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  const birthName = person.names.find(n => n.type === 'birth') || person.names[0];
                  const firstGiven = (birthName || person.names[0]).given || '';
                  const firstSurname = (birthName || person.names[0]).surname || '';
-                 displayName = `${firstGiven} ${firstSurname}`.trim();
+                 displayName = `${firstSurname} ${firstGiven}`.trim();
             }
              if (!displayName) displayName = person.id;
     
