@@ -37,11 +37,25 @@
                 <label for="personId">ID:</label>
                 <input type="text" id="personId" readonly> <br>
 
-                <label for="personGivenName">Given Name:</label>
-                <input type="text" id="personGivenName"> <br>
+                <div class="name-group">
+                    <label for="nameType">Name Type:</label>
+                    <select id="nameType">
+                        <option value="birth">Birth Name</option>
+                        <option value="married">Married Name</option>
+                        <option value="adopted">Adopted Name</option>
+                        <option value="nickname">Nickname</option>
+                    </select> <br>
 
-                <label for="personSurname">Surname:</label>
-                <input type="text" id="personSurname"> <br>
+                    <label for="personGivenName">Given Name:</label>
+                    <input type="text" id="personGivenName"> <br>
+
+                    <label for="personSurname">Surname:</label>
+                    <input type="text" id="personSurname"> <br>
+
+                    <button id="addNameButton" type="button">Add Additional Name</button>
+                </div>
+
+                <div id="additionalNames"></div>
 
                 <label for="personGender">Gender:</label>
                 <select id="personGender">

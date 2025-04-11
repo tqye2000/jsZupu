@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const editStatus = document.getElementById('editStatus');
     const parentFamilySelect = document.getElementById('parentFamilySelect');
     const spouseFamilySelect = document.getElementById('spouseFamilySelect');
+    const nameTypeSelect = document.getElementById('nameType');
+    const addNameButton = document.getElementById('addNameButton');
+    const additionalNamesDiv = document.getElementById('additionalNames');
     
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
@@ -42,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addPersonButton.addEventListener('click', handleAddPerson);
     saveChangesButton.addEventListener('click', handleSaveChanges);
     cancelEditButton.addEventListener('click', hideEditForm);
+    addNameButton.addEventListener('click', addNameField);
 
 
     // --- Functions ---
@@ -325,24 +329,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentlyEditingPersonId = personId;
 
-        // Find primary name for display in form
-        let givenName = '';
-        let surname = '';
+        // Clear existing additional names
+        additionalNamesDiv.innerHTML = '';
+
+        // Handle names
         if (person.names && person.names.length > 0) {
-             const birthName = person.names.find(n => n.type === 'birth') || person.names[0];
-             givenName = birthName.given || '';
-             surname = birthName.surname || '';
+            // Set primary name in main form
+            const primaryName = person.names[0];
+            nameTypeSelect.value = primaryName.type || 'birth';
+            personGivenNameInput.value = primaryName.given || '';
+            personSurnameInput.value = primaryName.surname || '';
+
+            // Add additional names
+            for (let i = 1; i < person.names.length; i++) {
+                addNameField(person.names[i]);
+            }
+        } else {
+            // Reset form for no names
+            nameTypeSelect.value = 'birth';
+            personGivenNameInput.value = '';
+            personSurnameInput.value = '';
         }
 
         personIdInput.value = person.id;
-        personGivenNameInput.value = givenName;
-        personSurnameInput.value = surname;
         personGenderInput.value = person.gender || ''; // Will match one of the select options
         
         // Update family selectors
         updateFamilySelectors(person);
         
-        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${givenName} ${surname}`;
+        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`;
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
         editStatus.textContent = '';
@@ -364,6 +379,8 @@ document.addEventListener('DOMContentLoaded', () => {
         personGivenNameInput.value = '';
         personSurnameInput.value = '';
         personGenderInput.value = ''; // Reset to default "Select gender..." option
+        nameTypeSelect.value = 'birth';
+        additionalNamesDiv.innerHTML = ''; // Clear any additional name fields
         
         // Reset family selectors
         updateFamilySelectors();
@@ -383,21 +400,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleSaveChanges() {
         const personId = personIdInput.value;
-        const givenName = personGivenNameInput.value.trim();
-        const surname = personSurnameInput.value.trim();
-        const gender = personGenderInput.value; // No need to trim() for select values
+        const gender = personGenderInput.value;
 
         if (!personId) return;
 
-        // Validate required fields
-        if (!givenName && !surname) {
-            editStatus.textContent = 'Error: Please enter at least a given name or surname.';
-            editStatus.style.color = 'red';
-            return;
-        }
+        // Collect all names
+        const names = [{
+            type: nameTypeSelect.value,
+            given: personGivenNameInput.value.trim(),
+            surname: personSurnameInput.value.trim()
+        }];
 
-        if (!gender) {
-            editStatus.textContent = 'Error: Please select a gender.';
+        // Add additional names
+        additionalNamesDiv.querySelectorAll('.additional-name').forEach(nameDiv => {
+            names.push({
+                type: nameDiv.querySelector('.name-type').value,
+                given: nameDiv.querySelector('.given-name').value.trim(),
+                surname: nameDiv.querySelector('.surname').value.trim()
+            });
+        });
+
+        // Validate that at least one name has some content
+        const hasValidName = names.some(name => name.given || name.surname);
+        if (!hasValidName) {
+            editStatus.textContent = 'Error: Please enter at least one name.';
             editStatus.style.color = 'red';
             return;
         }
@@ -406,36 +432,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let isNewPerson = false;
 
         if (!person) {
-            // This is a new person being added
             person = {
                 id: personId,
-                names: [], // Initialize names array
+                names: [],
                 gender: gender,
-                // Initialize other fields as needed
-                 eventRefs: [],
-                 familiesAsSpouse: [],
-                 familiesAsChild: [],
-                 noteRefs: []
+                eventRefs: [],
+                familiesAsSpouse: [],
+                familiesAsChild: [],
+                noteRefs: []
             };
             familyData.people.push(person);
             isNewPerson = true;
         }
 
-        // Update/Set the primary name (assuming birth or first name for simplicity)
-         let primaryName = person.names.find(n => n.type === 'birth');
-         if (!primaryName && person.names.length > 0) {
-            primaryName = person.names[0]; // Fallback to first name if no birth name
-         }
-
-         if (primaryName) {
-             primaryName.given = givenName;
-             primaryName.surname = surname;
-         } else {
-             // If no name exists yet, add one (likely for a new person)
-            person.names.push({ type: 'birth', given: givenName, surname: surname });
-         }
-
-        // Update gender
+        // Update person's names
+        person.names = names.filter(name => name.given || name.surname); // Only keep names with content
         person.gender = gender;
 
         // Handle family relationships
@@ -514,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editStatus.textContent = 'Changes saved!';
         editStatus.style.color = 'green';
         saveChangesButton.textContent = "Save Changes"; // Reset button text
-        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${givenName} ${surname}`; // Update panel title
+        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`; // Update panel title
 
         // Optionally hide form after a short delay
         // setTimeout(hideEditForm, 1500);
@@ -651,6 +662,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 spouseFamilySelect.value = person.familiesAsSpouse[0];
             }
         }
+    }
+
+    function addNameField(nameData = null) {
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'additional-name name-group';
+        
+        nameDiv.innerHTML = `
+            <select class="name-type">
+                <option value="birth" ${nameData?.type === 'birth' ? 'selected' : ''}>Birth Name</option>
+                <option value="married" ${nameData?.type === 'married' ? 'selected' : ''}>Married Name</option>
+                <option value="adopted" ${nameData?.type === 'adopted' ? 'selected' : ''}>Adopted Name</option>
+                <option value="nickname" ${nameData?.type === 'nickname' ? 'selected' : ''}>Nickname</option>
+            </select><br>
+            <label>Given Name:</label>
+            <input type="text" class="given-name" value="${nameData?.given || ''}"><br>
+            <label>Surname:</label>
+            <input type="text" class="surname" value="${nameData?.surname || ''}">
+            <button type="button" class="remove-name-button">Remove</button>
+        `;
+
+        nameDiv.querySelector('.remove-name-button').addEventListener('click', () => {
+            nameDiv.remove();
+        });
+
+        additionalNamesDiv.appendChild(nameDiv);
     }
 
 }); // End DOMContentLoaded
