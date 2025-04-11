@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // The style selector 'label': 'data(name)' will pick this up.
                     name: fullLabel,
                     // Keep raw gender for potential specific styling rules
-                    gender: person.gender || 'unknown'
+                    gender: person.gender || 'unknown',
                 }
             });
         });
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.push({
                     group: 'nodes',
                     data: { id: familyNodeId, isFamilyNode: true },
-                    style: { 'width': 10, 'height': 10, 'background-color': '#ccc', 'label': '' }, // Make family node small/grey
+                    //style: { 'width': 10, 'height': 10, 'background-color': '#ccc', 'label': '' }, // Make family node small/grey
                  });
 
                  partners.forEach(partnerId => {
@@ -221,17 +221,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     style: {
                         'background-color': '#666',
                         'label': 'data(name)', // This now points to our multi-line label
-                        'width': 'label',      // Auto width
-                        'height': 'label',     // Auto height
-                        'padding': '10px',     // Increase padding slightly for multi-line
+                        'width': 100,      // Auto width
+                        'height': 50,     // Auto height
+                        'padding': 10,     // Increase padding slightly for multi-line
                         'shape': 'round-rectangle',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'color': 'white',
                         'font-size': '9px',   // Make font slightly smaller for more info
                         'text-wrap': 'wrap',   // ESSENTIAL for multi-line labels
-                        'text-max-width': '100px', // Max width before wrapping further
-                        'line-height': '1.2'   // Adjust line spacing
+                        'text-max-width': 100, // Max width before wrapping further
+                        'line-height': 1.2   // Adjust line spacing
                     }
                 },
                 // ... (Keep other style rules: gender-specific colors, family nodes, edges, selected state) ...
@@ -244,11 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     selector: 'node[gender="male"]',
                     style: {
-                        'background-color': '#add8e6' // Light blue
+                        'background-color': '#4682B4' // Steel Blue - a darker shade of blue. 
+                                                      //or '#0066cc' // Another option - Royal Blue
                     }
                 },
                 { // Style hidden family nodes
-                    selector: 'node[isFamilyNode=true]',
+                    selector: 'node[?isFamilyNode]',
                     style: {
                         'width': 5, 'height': 5, 'background-color': '#ccc', 'label': ''
                     }
@@ -409,19 +410,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update Cytoscape graph
         if (cy) {
              const node = cy.getElementById(personId);
+             // Build the full label with name, gender, and lifespan
              const displayName = `${givenName} ${surname}`.trim() || personId; // Update display name
-
+             const genderLabel = gender ? `\n[${gender.charAt(0).toUpperCase()}]` : '';
+             const lifespan = getPersonLifespan(personId, familyData.events);
+             const fullLabel = displayName + genderLabel + (lifespan ? `\n${lifespan}` : '');
+         
              if (isNewPerson) {
                 // Add the node to the graph
                 cy.add({
                     group: 'nodes',
-                    data: { id: personId, name: displayName, gender: gender }
+                    data: { id: personId, name: fullLabel, gender: gender }
                 });
                  // Optional: Re-run layout after adding node
                  cy.layout({ name: 'dagre', rankDir: 'TB', spacingFactor: 1.2 }).run();
             } else {
                 // Update existing node data
-                node.data('name', displayName);
+                node.data('name', fullLabel);
                  node.data('gender', gender); // Update gender for styling if needed
                  // If gender changed, potentially update style (Cytoscape style selectors handle this)
                  // Force re-application of style if needed: node.style(cy.style().getNodeStyle(node));
