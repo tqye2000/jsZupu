@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameTypeSelect = document.getElementById('nameType');
     const addNameButton = document.getElementById('addNameButton');
     const additionalNamesDiv = document.getElementById('additionalNames');
+    const eventsContainer = document.getElementById('eventsContainer');
+    const addEventButton = document.getElementById('addEventButton');
     
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
@@ -46,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveChangesButton.addEventListener('click', handleSaveChanges);
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
+    addEventButton.addEventListener('click', () => addEventField());
 
 
     // --- Functions ---
@@ -361,6 +364,17 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
         editStatus.textContent = '';
+
+        // Clear and populate events
+        eventsContainer.innerHTML = '';
+        
+        if (person) {
+            // Get all events for this person
+            const personEvents = familyData.events.filter(event => event.personRef === person.id);
+            personEvents.forEach(event => {
+                addEventField(event);
+            });
+        }
     }
 
     function hideEditForm() {
@@ -381,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         personGenderInput.value = ''; // Reset to default "Select gender..." option
         nameTypeSelect.value = 'birth';
         additionalNamesDiv.innerHTML = ''; // Clear any additional name fields
+        eventsContainer.innerHTML = ''; // Clear any existing events
         
         // Reset family selectors
         updateFamilySelectors();
@@ -504,6 +519,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+
+        // Handle events
+        // First, remove all existing events for this person
+        familyData.events = familyData.events.filter(event => event.personRef !== person.id);
+        
+        // Collect and add new/updated events
+        const eventElements = eventsContainer.querySelectorAll('.event-item');
+        eventElements.forEach(eventElement => {
+            const eventId = eventElement.querySelector('.event-id').value;
+            const eventType = eventElement.querySelector('.event-type').value;
+            const eventDate = eventElement.querySelector('.event-date').value.trim();
+            const eventDateQualifier = eventElement.querySelector('.event-date-qualifier').value;
+            const eventPlace = eventElement.querySelector('.event-place').value.trim();
+
+            // Only add event if it has at least a type and date or place
+            if (eventType && (eventDate || eventPlace)) {
+                const event = {
+                    id: eventId,
+                    type: eventType,
+                    personRef: person.id,
+                    date: eventDate ? {
+                        value: eventDate,
+                        qualifier: eventDateQualifier
+                    } : undefined,
+                    placeRef: eventPlace || undefined
+                };
+                familyData.events.push(event);
+            }
+        });
 
         // Update Cytoscape graph
         if (cy) {
@@ -687,6 +731,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         additionalNamesDiv.appendChild(nameDiv);
+    }
+
+    function addEventField(eventData = null) {
+        const eventDiv = document.createElement('div');
+        eventDiv.className = 'event-item';
+        
+        // Generate a unique event ID if this is a new event
+        const eventId = eventData?.id || `e_${Date.now()}`;
+        
+        eventDiv.innerHTML = `
+            <button type="button" class="remove-event-button">×</button>
+            <input type="hidden" class="event-id" value="${eventId}">
+            
+            <label>Event Type:</label>
+            <select class="event-type">
+                <option value="birth" ${eventData?.type === 'birth' ? 'selected' : ''}>Birth</option>
+                <option value="death" ${eventData?.type === 'death' ? 'selected' : ''}>Death</option>
+                <option value="marriage" ${eventData?.type === 'marriage' ? 'selected' : ''}>Marriage</option>
+                <option value="divorce" ${eventData?.type === 'divorce' ? 'selected' : ''}>Divorce</option>
+                <option value="residence" ${eventData?.type === 'residence' ? 'selected' : ''}>Residence</option>
+                <option value="burial" ${eventData?.type === 'burial' ? 'selected' : ''}>Burial</option>
+                <option value="other" ${eventData?.type === 'other' ? 'selected' : ''}>Other</option>
+            </select>
+
+            <label>Date:</label>
+            <input type="text" class="event-date" placeholder="YYYY-MM-DD or YYYY" 
+                   value="${eventData?.date?.value || ''}">
+
+            <label>Date Qualifier:</label>
+            <select class="event-date-qualifier">
+                <option value="exact" ${eventData?.date?.qualifier === 'exact' ? 'selected' : ''}>Exact</option>
+                <option value="about" ${eventData?.date?.qualifier === 'about' ? 'selected' : ''}>About</option>
+                <option value="before" ${eventData?.date?.qualifier === 'before' ? 'selected' : ''}>Before</option>
+                <option value="after" ${eventData?.date?.qualifier === 'after' ? 'selected' : ''}>After</option>
+            </select>
+
+            <label>Place:</label>
+            <input type="text" class="event-place" placeholder="Location of event"
+                   value="${eventData?.placeRef || ''}">
+        `;
+
+        eventDiv.querySelector('.remove-event-button').addEventListener('click', () => {
+            eventDiv.remove();
+        });
+
+        eventsContainer.appendChild(eventDiv);
     }
 
 }); // End DOMContentLoaded

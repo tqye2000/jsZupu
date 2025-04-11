@@ -5,7 +5,7 @@
     "creationDate": "2023-10-27",
     "submitter": "Your Name/Org",
     "schemaNote": "This structure relies on application logic to resolve references (e.g., 'p1', 'f1', 'e1').",
-    "lastSaved": "2025-04-11T19:55:40.932Z"
+    "lastSaved": "2025-04-11T20:40:35.955Z"
   },
   "people": [
     {
@@ -183,8 +183,8 @@
     {
       "id": "f_1744401244124",
       "partners": [
-        "p_1744399124052",
-        "p_1744399049076"
+        "p_1744399049076",
+        "p_1744399124052"
       ],
       "children": [],
       "eventRefs": [],
@@ -260,6 +260,46 @@
         "s4",
         "s5"
       ]
+    },
+    {
+      "id": "e_1744403789387",
+      "type": "marriage",
+      "personRef": "p_1744399049076",
+      "date": {
+        "value": "2009",
+        "qualifier": "about"
+      },
+      "placeRef": "London"
+    },
+    {
+      "id": "e_1744403821419",
+      "type": "birth",
+      "personRef": "p_1744399049076",
+      "date": {
+        "value": "1993-10-11",
+        "qualifier": "exact"
+      },
+      "placeRef": "Birmingham"
+    },
+    {
+      "id": "e_1744403922603",
+      "type": "marriage",
+      "personRef": "p_1744399124052",
+      "date": {
+        "value": "2008",
+        "qualifier": "about"
+      },
+      "placeRef": "London"
+    },
+    {
+      "id": "e_1744403986859",
+      "type": "birth",
+      "personRef": "p_1744399124052",
+      "date": {
+        "value": "1990-5-21",
+        "qualifier": "exact"
+      },
+      "placeRef": "London"
     }
   ],
   "places": [

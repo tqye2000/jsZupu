@@ -177,3 +177,58 @@ h1, h2 {
 .remove-name-button:hover {
     background-color: #cc0000;
 }
+
+.events-section {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.event-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    background-color: #f9f9f9;
+}
+
+.event-item select,
+.event-item input {
+    margin-bottom: 5px;
+    width: calc(100% - 20px);
+    padding: 5px;
+}
+
+.event-item label {
+    display: inline-block;
+    margin-bottom: 3px;
+}
+
+.remove-event-button {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    float: right;
+}
+
+.remove-event-button:hover {
+    background-color: #cc0000;
+}
+
+#addEventButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#addEventButton:hover {
+    background-color: #45a049;
+}
