@@ -1,0 +1,337 @@
+{
+  "meta": {
+    "description": "Example JSON Structure for a Comprehensive Family Tree",
+    "version": "1.0",
+    "creationDate": "2023-10-27",
+    "submitter": "Your Name/Org",
+    "schemaNote": "This structure relies on application logic to resolve references (e.g., 'p1', 'f1', 'e1').",
+    "lastSaved": "2025-04-11T19:55:40.932Z"
+  },
+  "people": [
+    {
+      "id": "p1",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "John",
+          "surname": "Doe"
+        },
+        {
+          "type": "married",
+          "given": "Johnny",
+          "surname": "Doe"
+        }
+      ],
+      "eventRefs": [
+        "e1",
+        "e2"
+      ],
+      "familiesAsSpouse": [
+        "f1"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": [
+        "n1"
+      ]
+    },
+    {
+      "id": "p2",
+      "gender": "female",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Jane",
+          "surname": "Smith"
+        },
+        {
+          "type": "married",
+          "given": "Jane",
+          "surname": "Doe"
+        }
+      ],
+      "eventRefs": [
+        "e5"
+      ],
+      "familiesAsSpouse": [
+        "f1",
+        "f2"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p3",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Peter",
+          "surname": "Doe"
+        }
+      ],
+      "eventRefs": [
+        "e4"
+      ],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p4",
+      "gender": "female",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Mary",
+          "surname": "Jones"
+        }
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p5",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Robert",
+          "surname": "Jones"
+        }
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f2"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744399049076",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Clare",
+          "surname": "Doe"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744401244124"
+      ],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744399124052",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Peter",
+          "surname": "Thomas"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744401244124"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    }
+  ],
+  "families": [
+    {
+      "id": "f1",
+      "partners": [
+        "p1",
+        "p2"
+      ],
+      "children": [
+        "p3",
+        "p_1744399049076"
+      ],
+      "eventRefs": [
+        "e3"
+      ],
+      "noteRefs": [
+        "n2"
+      ]
+    },
+    {
+      "id": "f2",
+      "partners": [
+        "p2",
+        "p5"
+      ],
+      "children": [
+        "p4"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744401244124",
+      "partners": [
+        "p_1744399124052",
+        "p_1744399049076"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "type": "birth",
+      "personRef": "p1",
+      "date": {
+        "value": "1950-03-15",
+        "qualifier": "exact"
+      },
+      "placeRef": "pl1",
+      "sourceRefs": [
+        "s1"
+      ]
+    },
+    {
+      "id": "e2",
+      "type": "death",
+      "personRef": "p1",
+      "date": {
+        "value": "2020-11-01",
+        "qualifier": "exact"
+      },
+      "placeRef": "pl2",
+      "sourceRefs": [
+        "s2"
+      ]
+    },
+    {
+      "id": "e3",
+      "type": "marriage",
+      "familyRef": "f1",
+      "date": {
+        "value": "1975-06-20",
+        "qualifier": "about"
+      },
+      "placeRef": "pl1",
+      "sourceRefs": [
+        "s3"
+      ],
+      "noteRefs": [
+        "n3"
+      ]
+    },
+    {
+      "id": "e4",
+      "type": "birth",
+      "personRef": "p3",
+      "date": {
+        "value": "1980-09-10",
+        "qualifier": "exact"
+      },
+      "placeRef": "pl1",
+      "sourceRefs": [
+        "s1"
+      ]
+    },
+    {
+      "id": "e5",
+      "type": "residence",
+      "personRef": "p2",
+      "date": {
+        "value": "1960",
+        "qualifier": "before"
+      },
+      "placeRef": "pl3",
+      "sourceRefs": [
+        "s4",
+        "s5"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "pl1",
+      "name": "Anytown, AnyCounty, Anystate, USA",
+      "type": "City",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    {
+      "id": "pl2",
+      "name": "General Hospital, Anytown",
+      "type": "Hospital",
+      "partOfRef": "pl1"
+    },
+    {
+      "id": "pl3",
+      "name": "Someville, OtherCounty, Anystate, USA",
+      "type": "Town"
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Birth Certificate Index, Anystate Vital Records, Vol 3",
+      "citation": "Anystate Dept of Health, Birth Records 1950-1955, Vol 3, Page 123, Entry #5.",
+      "repository": "Anystate Archives",
+      "media": [
+        {
+          "type": "digitalImage",
+          "url": "http://example.com/images/bc_johndoe.jpg"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Obituary for John Doe, Anytown Times",
+      "publicationDate": "2020-11-03",
+      "citation": "Anytown Times, Anytown, Anystate. 3 Nov 2020. Page B4."
+    },
+    {
+      "id": "s3",
+      "title": "Marriage License Application #12345",
+      "citation": "AnyCounty Clerk's Office, Marriage Licenses 1975, Book 12, Page 56."
+    },
+    {
+      "id": "s4",
+      "title": "1960 US Federal Census",
+      "citation": "1960 U.S. census, Anystate, OtherCounty, Someville, enumeration district (ED) 10-5, sheet 8A, dwelling 150, family 165, Jane Smith; digital image, Ancestry.com (http://www.ancestry.com : accessed 27 Oct 2023); citing NARA microfilm publication T627, roll 9999."
+    },
+    {
+      "id": "s5",
+      "title": "Personal Interview with Jane Doe",
+      "interviewDate": "2005-05-10",
+      "interviewer": "Your Name"
+    }
+  ],
+  "notes": [
+    {
+      "id": "n1",
+      "text": "John Doe was known for his love of gardening and volunteered at the local library."
+    },
+    {
+      "id": "n2",
+      "text": "This family unit moved from Anytown to Sometown around 1985 according to family letters (see source S6 - not defined above)."
+    },
+    {
+      "id": "n3",
+      "text": "The marriage certificate notes the ceremony was performed by Rev. Michael Smith. Witnessed by Alice Brown and Robert Green."
+    }
+  ]
+}
