@@ -13,7 +13,7 @@
 
 </head>
 <body>
-    <h1>Client-Side Family Tree Viewer</h1>
+    <h1>族谱 Family Tree</h1>
 
     <div class="controls">
         <label for="fileInput">Load Family Tree JSON:</label>
@@ -44,9 +44,21 @@
                 <input type="text" id="personSurname"> <br>
 
                 <label for="personGender">Gender:</label>
-                <input type="text" id="personGender" placeholder="male/female/other"> <br>
+                <select id="personGender">
+                    <option value="">Select gender...</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select> <br>
 
-                <!-- Add more fields as needed (birth date, etc.) -->
+                <div class="form-group">
+                    <label for="parentFamilySelect">Parent Family:</label>
+                    <select id="parentFamilySelect"></select>
+                </div>
+                <div class="form-group">
+                    <label for="spouseFamilySelect">Spouse Family:</label>
+                    <select id="spouseFamilySelect"></select>
+                </div>
 
                 <button id="saveChangesButton">Save Changes</button>
                 <button id="cancelEditButton">Cancel</button>

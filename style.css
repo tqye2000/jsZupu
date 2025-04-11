@@ -99,6 +99,14 @@ h1, h2 {
     border-radius: 3px;
 }
 
+#editForm select {
+    width: calc(100% - 120px); /* Match the input width */
+    padding: 5px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
 #editForm button {
      margin-top: 10px;
      margin-right: 5px;
@@ -113,4 +121,18 @@ h1, h2 {
 
 .hidden {
     display: none;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
 }

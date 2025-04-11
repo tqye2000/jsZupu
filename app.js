@@ -1,3 +1,9 @@
+//----------------------------------------------------------------
+// File app.js
+//
+//
+//----------------------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Globals ---
     let familyData = { people: [], families: [], events: [], places: [], sources: [], notes: [], meta: {} };
@@ -21,7 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveChangesButton = document.getElementById('saveChangesButton');
     const cancelEditButton = document.getElementById('cancelEditButton');
     const editStatus = document.getElementById('editStatus');
-
+    const parentFamilySelect = document.getElementById('parentFamilySelect');
+    const spouseFamilySelect = document.getElementById('spouseFamilySelect');
+    
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
     searchButton.addEventListener('click', handleSearch);
@@ -157,59 +165,49 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 2. Create Edges (Parent-Child Relationships from Families)
+        // 2. Create Edges (Family Relationships)
         familyData.families.forEach(family => {
             const partners = family.partners || [];
             const children = family.children || [];
+            const familyNodeId = `fnode_${family.id}`;
 
-            if (partners.length > 0 && children.length > 0) {
-                 // Optional: Add a hidden node representing the family unit for cleaner edge routing
-                const familyNodeId = `fnode_${family.id}`;
+            if (partners.length > 0) {
+                // Always create a family node if there are partners
                 elements.push({
                     group: 'nodes',
-                    data: { id: familyNodeId, isFamilyNode: true },
-                    //style: { 'width': 10, 'height': 10, 'background-color': '#ccc', 'label': '' }, // Make family node small/grey
-                 });
+                    data: { id: familyNodeId, isFamilyNode: true }
+                });
 
-                 partners.forEach(partnerId => {
-                     elements.push({
-                         group: 'edges',
-                         data: {
-                             id: `edge_${partnerId}_${familyNodeId}`,
-                             source: partnerId, // Partner is source
-                             target: familyNodeId, // Edge goes to family node
-                             isPartnerEdge: true
-                         },
-                         classes: 'partner-edge' // Add class for styling
-                     });
-                 });
+                // Connect all partners to the family node
+                partners.forEach(partnerId => {
+                    elements.push({
+                        group: 'edges',
+                        data: {
+                            id: `edge_${partnerId}_${familyNodeId}`,
+                            source: partnerId,
+                            target: familyNodeId,
+                            isPartnerEdge: true
+                        },
+                        classes: 'partner-edge'
+                    });
+                });
 
-                 children.forEach(childId => {
-                     elements.push({
-                         group: 'edges',
-                         data: {
-                             id: `edge_${familyNodeId}_${childId}`,
-                             source: familyNodeId, // Edge comes from family node
-                             target: childId,    // Child is target
-                             isChildEdge: true
-                         },
-                         classes: 'child-edge' // Add class for styling
-                     });
-                 });
+                // If there are children, connect them to the family node
+                if (children.length > 0) {
+                    children.forEach(childId => {
+                        elements.push({
+                            group: 'edges',
+                            data: {
+                                id: `edge_${familyNodeId}_${childId}`,
+                                source: familyNodeId,
+                                target: childId,
+                                isChildEdge: true
+                            },
+                            classes: 'child-edge'
+                        });
+                    });
+                }
             }
-            // Simple Parent -> Child (Alternative - might cross lines awkwardly)
-            // partners.forEach(parentId => {
-            //     children.forEach(childId => {
-            //         elements.push({
-            //             group: 'edges',
-            //             data: {
-            //                 id: `edge_${parentId}_${childId}_f${family.id}`,
-            //                 source: parentId,
-            //                 target: childId
-            //             }
-            //         });
-            //     });
-            // });
         });
 
         cy = cytoscape({
@@ -251,23 +249,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 { // Style hidden family nodes
                     selector: 'node[?isFamilyNode]',
                     style: {
-                        'width': 5, 'height': 5, 'background-color': '#ccc', 'label': ''
+                        'width': 5,
+                        'height': 5,
+                        'background-color': '#666',
+                        'label': ''
                     }
                 },
                 {
                     selector: 'edge',
                     style: {
                         'width': 2,
-                        'line-color': '#ccc',
+                        'line-color': '#666',
                         'target-arrow-shape': 'none',
                         'curve-style': 'bezier'
                     }
                 },
                 {
+                    selector: '.partner-edge',
+                    style: {
+                        'line-color': '#FF69B4', // Pink color for spouse relationships
+                        'line-style': 'solid',
+                        'width': 3
+                    }
+                },
+                {
                     selector: '.child-edge',
                     style: {
+                        'line-color': '#666',
                         'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#ccc',
+                        'target-arrow-color': '#666',
                         'arrow-scale': 0.8
                     }
                 },
@@ -282,8 +292,16 @@ document.addEventListener('DOMContentLoaded', () => {
             layout: {
                 name: 'dagre',
                 rankDir: 'TB',
-                spacingFactor: 1.3 // Might need slightly more space vertically now
-            }
+                spacingFactor: 1.3,
+                rankSep: 100, // Increase vertical spacing between ranks
+                nodeSep: 50,  // Increase horizontal spacing between nodes
+                edgeSep: 50   // Increase spacing between edges
+            },
+            minZoom: 0.2,
+            maxZoom: 3,
+            wheelSensitivity: 0.2,  // Reduce this value to make zooming less sensitive (default is 1)
+            zoomingEnabled: true,
+            userZoomingEnabled: true
         });
 
         // --- Cytoscape Event Handlers ---
@@ -319,13 +337,15 @@ document.addEventListener('DOMContentLoaded', () => {
         personIdInput.value = person.id;
         personGivenNameInput.value = givenName;
         personSurnameInput.value = surname;
-        personGenderInput.value = person.gender || '';
-        // Populate other fields...
-
+        personGenderInput.value = person.gender || ''; // Will match one of the select options
+        
+        // Update family selectors
+        updateFamilySelectors(person);
+        
         detailsPanel.querySelector('h2').textContent = `Details / Edit: ${givenName} ${surname}`;
-        detailsPanel.querySelector('p').classList.add('hidden'); // Hide initial message
+        detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
-        editStatus.textContent = ''; // Clear status
+        editStatus.textContent = '';
     }
 
     function hideEditForm() {
@@ -338,44 +358,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
      function handleAddPerson() {
         const newId = `p_${Date.now()}`; // Simple unique ID generation
-        currentlyEditingPersonId = newId; // Mark as editing this new ID
+        currentlyEditingPersonId = newId;
 
         personIdInput.value = newId;
         personGivenNameInput.value = '';
         personSurnameInput.value = '';
-        personGenderInput.value = '';
-        // Clear other fields...
-
+        personGenderInput.value = ''; // Reset to default "Select gender..." option
+        
+        // Reset family selectors
+        updateFamilySelectors();
+        
         detailsPanel.querySelector('h2').textContent = 'Add New Person';
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
-        saveChangesButton.textContent = "Add Person"; // Change button text
+        saveChangesButton.textContent = "Add Person";
         editStatus.textContent = '';
 
-        // Clear selection in graph
-         if (cy) {
+        // Clear selection in group
+        if (cy) {
             cy.$(':selected').unselect();
         }
     }
 
+
     function handleSaveChanges() {
-        const personId = personIdInput.value; // Get ID from the (readonly) field
+        const personId = personIdInput.value;
         const givenName = personGivenNameInput.value.trim();
         const surname = personSurnameInput.value.trim();
-        const gender = personGenderInput.value.trim().toLowerCase();
+        const gender = personGenderInput.value; // No need to trim() for select values
 
-        if (!personId) return; // Should not happen if form logic is correct
+        if (!personId) return;
+
+        // Validate required fields
+        if (!givenName && !surname) {
+            editStatus.textContent = 'Error: Please enter at least a given name or surname.';
+            editStatus.style.color = 'red';
+            return;
+        }
+
+        if (!gender) {
+            editStatus.textContent = 'Error: Please select a gender.';
+            editStatus.style.color = 'red';
+            return;
+        }
 
         let person = familyData.people.find(p => p.id === personId);
         let isNewPerson = false;
 
         if (!person) {
             // This is a new person being added
-            if (!givenName && !surname) {
-                editStatus.textContent = 'Error: Please enter at least a given name or surname.';
-                editStatus.style.color = 'red';
-                return;
-            }
             person = {
                 id: personId,
                 names: [], // Initialize names array
@@ -407,30 +438,77 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update gender
         person.gender = gender;
 
+        // Handle family relationships
+        const selectedParentFamily = parentFamilySelect.value;
+        const selectedSpouseFamily = spouseFamilySelect.value;
+
+        // Update parent family relationship
+        if (selectedParentFamily) {
+            const parentFamily = familyData.families.find(f => f.id === selectedParentFamily);
+            if (parentFamily) {
+                // Remove person from any existing parent families
+                familyData.families.forEach(f => {
+                    f.children = (f.children || []).filter(id => id !== person.id);
+                });
+                
+                // Add to new parent family
+                parentFamily.children = parentFamily.children || [];
+                if (!parentFamily.children.includes(person.id)) {
+                    parentFamily.children.push(person.id);
+                }
+                person.familiesAsChild = [selectedParentFamily];
+            }
+        }
+
+        // Handle spouse family relationship
+        if (selectedSpouseFamily) {
+            // Remove person from any existing spouse families first
+            familyData.families.forEach(f => {
+                if (f.partners) {
+                    f.partners = f.partners.filter(id => id !== person.id);
+                }
+            });
+            person.familiesAsSpouse = []; // Reset spouse families
+
+            if (selectedSpouseFamily === 'new') {
+                // Create new family
+                const familyId = `f_${Date.now()}`; // Simple unique ID generation
+                const spouseFamily = {
+                    id: familyId,
+                    partners: [person.id],
+                    children: [],
+                    eventRefs: [],
+                    noteRefs: []
+                };
+                familyData.families.push(spouseFamily);
+                person.familiesAsSpouse = [familyId];
+            } else {
+                const spouseFamily = familyData.families.find(f => f.id === selectedSpouseFamily);
+                if (spouseFamily) {
+                    spouseFamily.partners = spouseFamily.partners || [];
+                    if (!spouseFamily.partners.includes(person.id)) {
+                        spouseFamily.partners.push(person.id);
+                    }
+                    person.familiesAsSpouse = [selectedSpouseFamily]; // Replace instead of push
+                }
+            }
+        }
+
         // Update Cytoscape graph
         if (cy) {
-             const node = cy.getElementById(personId);
-             // Build the full label with name, gender, and lifespan
-             const displayName = `${givenName} ${surname}`.trim() || personId; // Update display name
-             const genderLabel = gender ? `\n[${gender.charAt(0).toUpperCase()}]` : '';
-             const lifespan = getPersonLifespan(personId, familyData.events);
-             const fullLabel = displayName + genderLabel + (lifespan ? `\n${lifespan}` : '');
-         
-             if (isNewPerson) {
-                // Add the node to the graph
-                cy.add({
-                    group: 'nodes',
-                    data: { id: personId, name: fullLabel, gender: gender }
-                });
-                 // Optional: Re-run layout after adding node
-                 cy.layout({ name: 'dagre', rankDir: 'TB', spacingFactor: 1.2 }).run();
-            } else {
-                // Update existing node data
-                node.data('name', fullLabel);
-                 node.data('gender', gender); // Update gender for styling if needed
-                 // If gender changed, potentially update style (Cytoscape style selectors handle this)
-                 // Force re-application of style if needed: node.style(cy.style().getNodeStyle(node));
-             }
+            // Instead of just updating the node, reinitialize the entire graph
+            // to show new relationships
+            initializeCytoscape();
+            
+            // After reinitializing, select and center on the current person
+            const node = cy.getElementById(personId);
+            if (node) {
+                node.select();
+                cy.animate({
+                    center: { eles: node },
+                    zoom: 1.5
+                }, { duration: 500 });
+            }
         }
 
         editStatus.textContent = 'Changes saved!';
@@ -523,6 +601,55 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             alert(`Error saving file: ${error.message}`);
             console.error("Saving Error:", error);
+        }
+    }
+
+    // Add new function to update family selectors
+    function updateFamilySelectors(person = null) {
+        // Clear existing options
+        parentFamilySelect.innerHTML = '<option value="">Select Parent Family...</option>';
+        spouseFamilySelect.innerHTML = '<option value="">Select/Create Spouse Family...</option>';
+
+        // Add "Create New Family" option for spouse selector
+        const newFamilyOption = new Option('Create New Family...', 'new');
+        spouseFamilySelect.appendChild(newFamilyOption);
+
+        // Add existing families as options
+        familyData.families.forEach(family => {
+            const partners = family.partners || [];
+            const children = family.children || [];
+            
+            // Create display text for family
+            const partnerNames = partners.map(pid => {
+                const partner = familyData.people.find(p => p.id === pid);
+                if (!partner?.names?.length) return pid;
+                const name = partner.names[0];
+                return `${name.given || ''} ${name.surname || ''}`.trim() || pid;
+            }).join(' & ');
+
+            const familyLabel = partnerNames ? `Family: ${partnerNames}` : `Family ${family.id}`;
+
+            // Add to parent family selector if person isn't a partner
+            if (!partners.includes(person?.id)) {
+                const option = new Option(familyLabel, family.id);
+                parentFamilySelect.appendChild(option);
+            }
+
+            // Add to spouse family selector if person isn't a child
+            if (!children.includes(person?.id)) {
+                const option = new Option(familyLabel, family.id);
+                spouseFamilySelect.appendChild(option);
+            }
+        });
+
+        // If editing existing person, select their current families
+        if (person) {
+            if (person.familiesAsChild?.[0]) {
+                parentFamilySelect.value = person.familiesAsChild[0];
+            }
+            if (person.familiesAsSpouse?.[0]) {
+                spouseFamilySelect.value = person.familiesAsSpouse[0];
+            }
         }
     }
 
