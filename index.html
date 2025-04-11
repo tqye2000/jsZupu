@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client-Side Family Tree</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Cytoscape.js library -->
+    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+    <!-- Optional: Layout extension (dagre) for better tree layout -->
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+
+</head>
+<body>
+    <h1>Client-Side Family Tree Viewer</h1>
+
+    <div class="controls">
+        <label for="fileInput">Load Family Tree JSON:</label>
+        <input type="file" id="fileInput" accept=".json">
+
+        <input type="text" id="searchInput" placeholder="Search by name...">
+        <button id="searchButton">Search</button>
+
+        <button id="saveButton">Save Tree to JSON</button>
+        <button id="addPersonButton">Add New Person</button>
+    </div>
+
+    <div id="searchResults"></div>
+
+    <div class="main-container">
+        <div id="cy"></div> <!-- Cytoscape visualization container -->
+        <div id="detailsPanel">
+            <h2>Details / Edit</h2>
+            <p>(Select a person in the graph or search results)</p>
+            <div id="editForm" class="hidden">
+                <label for="personId">ID:</label>
+                <input type="text" id="personId" readonly> <br>
+
+                <label for="personGivenName">Given Name:</label>
+                <input type="text" id="personGivenName"> <br>
+
+                <label for="personSurname">Surname:</label>
+                <input type="text" id="personSurname"> <br>
+
+                <label for="personGender">Gender:</label>
+                <input type="text" id="personGender" placeholder="male/female/other"> <br>
+
+                <!-- Add more fields as needed (birth date, etc.) -->
+
+                <button id="saveChangesButton">Save Changes</button>
+                <button id="cancelEditButton">Cancel</button>
+                <p id="editStatus"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
