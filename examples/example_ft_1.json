@@ -5,7 +5,7 @@
     "creationDate": "2023-10-27",
     "submitter": "Your Name/Org",
     "schemaNote": "This structure relies on application logic to resolve references (e.g., 'p1', 'f1', 'e1').",
-    "lastSaved": "2025-04-11T20:40:35.955Z"
+    "lastSaved": "2025-04-12T20:21:25.469Z"
   },
   "people": [
     {
@@ -148,6 +148,64 @@
       ],
       "familiesAsChild": [],
       "noteRefs": []
+    },
+    {
+      "id": "p6",
+      "gender": "female",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Emily",
+          "surname": "Doe"
+        }
+      ],
+      "eventRefs": [
+        "e6"
+      ],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p7",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Michael",
+          "surname": "Brown"
+        }
+      ],
+      "eventRefs": [
+        "e7",
+        "e8"
+      ],
+      "familiesAsSpouse": [
+        "f3"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p8",
+      "gender": "female",
+      "names": [
+        {
+          "type": "birth",
+          "given": "Sophia",
+          "surname": "Brown"
+        }
+      ],
+      "eventRefs": [
+        "e9"
+      ],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f3"
+      ],
+      "noteRefs": []
     }
   ],
   "families": [
@@ -159,7 +217,8 @@
       ],
       "children": [
         "p3",
-        "p_1744399049076"
+        "p_1744399049076",
+        "p6"
       ],
       "eventRefs": [
         "e3"
@@ -185,6 +244,16 @@
       "partners": [
         "p_1744399049076",
         "p_1744399124052"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f3",
+      "partners": [
+        "p7",
+        "p8"
       ],
       "children": [],
       "eventRefs": [],
@@ -300,6 +369,43 @@
         "qualifier": "exact"
       },
       "placeRef": "London"
+    },
+    {
+      "id": "e7",
+      "type": "birth",
+      "personRef": "p7",
+      "date": {
+        "value": "1985-07-15",
+        "qualifier": "exact"
+      },
+      "placeRef": "pl1"
+    },
+    {
+      "id": "e8",
+      "type": "death",
+      "personRef": "p7",
+      "date": {
+        "value": "",
+        "qualifier": ""
+      },
+      "placeRef": ""
+    },
+    {
+      "id": "e9",
+      "type": "",
+      "personRef": "",
+      "date": {},
+      "placeRef": ""
+    },
+    {
+      "id": "e6",
+      "type": "death",
+      "personRef": "p6",
+      "date": {
+        "value": "2025-04-11",
+        "qualifier": "exact"
+      },
+      "placeRef": "pl1"
     }
   ],
   "places": [

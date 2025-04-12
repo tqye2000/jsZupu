@@ -78,7 +78,7 @@ h1, h2 {
 }
 
 #detailsPanel {
-    flex: 1; /* Takes up less space */
+    flex: 0.8; /* Takes up less space */
     border: 1px solid #ccc;
     padding: 1em;
     background-color: #fff;

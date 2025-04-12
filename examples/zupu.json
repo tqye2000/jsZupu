@@ -1,0 +1,227 @@
+//Okay, here is a JSON template representing a comprehensive family tree, designed to mirror the structure and shown in the previous XML example.
+
+//Since JSON doesn't have built-in attributes vs. elements or native ID/IDREF validation like XML+XSD, we'll rely on conventions (like using id fields and reference fields ending in Ref or Refs) and structure the data into distinct arrays for each entity type. The client application would be responsible for resolving these references.
+
+{
+  "meta": {
+    "description": "Example JSON Structure for a Comprehensive Family Tree",
+    "version": "1.0",
+    "creationDate": "2023-10-27",
+    "submitter": "Your Name/Org",
+    "schemaNote": "This structure relies on application logic to resolve references (e.g., 'p1', 'f1', 'e1')."
+  },
+
+  "people": [
+    {
+      "id": "p1",
+      "gender": "male",
+      "names": [
+        { "type": "birth", "given": "John", "surname": "Doe" },
+        { "type": "married", "given": "Johnny", "surname": "Doe" }
+      ],
+      "eventRefs": ["e1", "e2"], // Links to specific birth/death events
+      "familiesAsSpouse": ["f1"], // Families where this person is a partner
+      "familiesAsChild": [],      // Families where this person is a child
+      "noteRefs": ["n1"]
+    },
+    {
+      "id": "p2",
+      "gender": "female",
+      "names": [
+        { "type": "birth", "given": "Jane", "surname": "Smith" },
+        { "type": "married", "given": "Jane", "surname": "Doe" }
+      ],
+      "eventRefs": ["e5"], // Example: Residence event
+      "familiesAsSpouse": ["f1", "f2"], // Member of two families as a spouse
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p3",
+      "gender": "male",
+      "names": [
+        { "type": "birth", "given": "Peter", "surname": "Doe" }
+      ],
+      "eventRefs": ["e4"], // Birth event
+      "familiesAsSpouse": [],
+      "familiesAsChild": ["f1"], // Child in family f1
+      "noteRefs": []
+    },
+    {
+      "id": "p4",
+      "gender": "female",
+      "names": [
+        { "type": "birth", "given": "Mary", "surname": "Jones" }
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": [],
+      "familiesAsChild": ["f2"], // Child in family f2
+      "noteRefs": []
+    },
+    {
+      "id": "p5", // Assuming this person exists for family f2
+      "gender": "male", 
+      "names": [
+        { "type": "birth", "given": "Robert", "surname": "Jones" } // Example name
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": ["f2"],
+      "familiesAsChild": [],
+      "noteRefs": []
+    }
+  ],
+
+  "families": [
+    {
+      "id": "f1",
+      "partners": ["p1", "p2"], // References to people IDs
+      "children": ["p3"],       // References to people IDs
+      "eventRefs": ["e3"],      // Reference to marriage event for this family
+      "noteRefs": ["n2"]
+    },
+    {
+      "id": "f2",
+      "partners": ["p2", "p5"], // Jane's second family
+      "children": ["p4"],
+      "eventRefs": [], // Could have marriage/divorce event refs here
+      "noteRefs": []
+    }
+  ],
+
+  "events": [
+    {
+      "id": "e1",
+      "type": "birth",
+      "personRef": "p1", // Link to the person this event concerns
+      "date": { "value": "1950-03-15", "qualifier": "exact" },
+      "placeRef": "pl1", // Link to the place ID
+      "sourceRefs": ["s1"] // Link(s) to source IDs
+    },
+    {
+      "id": "e2",
+      "type": "death",
+      "personRef": "p1",
+      "date": { "value": "2020-11-01", "qualifier": "exact" },
+      "placeRef": "pl2",
+      "sourceRefs": ["s2"]
+    },
+    {
+      "id": "e3",
+      "type": "marriage",
+      "familyRef": "f1", // Link to the family this event concerns
+      "date": { "value": "1975-06-20", "qualifier": "about" },
+      "placeRef": "pl1",
+      "sourceRefs": ["s3"],
+      "noteRefs": ["n3"]
+    },
+    {
+      "id": "e4",
+      "type": "birth",
+      "personRef": "p3",
+      "date": { "value": "1980-09-10", "qualifier": "exact" },
+      "placeRef": "pl1",
+      "sourceRefs": ["s1"]
+    },
+    {
+        "id": "e5",
+        "type": "residence",
+        "personRef": "p2",
+        "date": { "value": "1960", "qualifier": "before" },
+        "placeRef": "pl3",
+        "sourceRefs": ["s4", "s5"] // Multiple sources
+    }
+  ],
+
+  "places": [
+    {
+      "id": "pl1",
+      "name": "Anytown, AnyCounty, Anystate, USA",
+      "type": "City",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.0060
+      }
+    },
+    {
+      "id": "pl2",
+      "name": "General Hospital, Anytown",
+      "type": "Hospital",
+      "partOfRef": "pl1" // Reference to parent place ID for hierarchy
+    },
+    {
+      "id": "pl3",
+      "name": "Someville, OtherCounty, Anystate, USA",
+      "type": "Town"
+    }
+  ],
+
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Birth Certificate Index, Anystate Vital Records, Vol 3",
+      "citation": "Anystate Dept of Health, Birth Records 1950-1955, Vol 3, Page 123, Entry #5.",
+      "repository": "Anystate Archives",
+      "media": [
+        { "type": "digitalImage", "url": "http://example.com/images/bc_johndoe.jpg" }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Obituary for John Doe, Anytown Times",
+      "publicationDate": "2020-11-03", // Can include specific fields
+      "citation": "Anytown Times, Anytown, Anystate. 3 Nov 2020. Page B4."
+    },
+    {
+      "id": "s3",
+      "title": "Marriage License Application #12345",
+      "citation": "AnyCounty Clerk's Office, Marriage Licenses 1975, Book 12, Page 56."
+    },
+    {
+      "id": "s4",
+      "title": "1960 US Federal Census",
+      "citation": "1960 U.S. census, Anystate, OtherCounty, Someville, enumeration district (ED) 10-5, sheet 8A, dwelling 150, family 165, Jane Smith; digital image, Ancestry.com (http://www.ancestry.com : accessed 27 Oct 2023); citing NARA microfilm publication T627, roll 9999."
+    },
+    {
+      "id": "s5",
+      "title": "Personal Interview with Jane Doe",
+      "interviewDate": "2005-05-10",
+      "interviewer": "Your Name"
+    }
+  ],
+
+  "notes": [
+    {
+      "id": "n1",
+      "text": "John Doe was known for his love of gardening and volunteered at the local library."
+    },
+    {
+      "id": "n2",
+      "text": "This family unit moved from Anytown to Sometown around 1985 according to family letters (see source S6 - not defined above)."
+    },
+    {
+      "id": "n3",
+      "text": "The marriage certificate notes the ceremony was performed by Rev. Michael Smith. Witnessed by Alice Brown and Robert Green."
+    }
+  ]
+}
+
+
+//How Hierarchy is Represented (Similar logic to the XML approach):
+
+//Direct Links: The JSON defines the direct relationships:
+
+//A person object lists the familiesAsChild (array of family IDs) they belong to as a child.
+
+//A person object lists the familiesAsSpouse (array of family IDs) they belong to as a partner.
+
+//A family object lists its partners (array of person IDs) and children (array of person IDs).
+
+//Application Responsibility: Just like with the XML version using IDs/Refs, the client application needs to process these references to build the tree:
+
+//To find parents of p3: Look up p3, find familiesAsChild: ["f1"]. Look up family f1, find partners: ["p1", "p2"]. Look up p1 and p2.
+
+//To find children of p1: Look up p1, find familiesAsSpouse: ["f1"]. Look up family f1, find children: ["p3"]. Look up p3.
+
+//This relational approach using IDs allows JSON to handle the complex relationships (like multiple marriages) without the problems of deep nesting.
+
+//This JSON structure is functional and comprehensive, but it relies more heavily on the application logic for validation and relationship integrity compared to what XML + XSD can enforce natively.
