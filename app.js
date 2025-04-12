@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('saveButton');
     const addPersonButton = document.getElementById('addPersonButton');
     const newButton = document.getElementById('newButton');
+    const saveAsPdfButton = document.getElementById('saveAsPdfButton');
     const searchResultsDiv = document.getElementById('searchResults');
     const cyContainer = document.getElementById('cy');
     const detailsPanel = document.getElementById('detailsPanel');
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', handleSaveFile);
     addPersonButton.addEventListener('click', handleAddPerson);
     newButton.addEventListener('click', handleNewTree);
+    saveAsPdfButton.addEventListener('click', handleSaveAsPdf);
     saveChangesButton.addEventListener('click', handleSaveChanges);
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
@@ -829,6 +831,270 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show success message
         editStatus.textContent = 'New family tree created!';
         editStatus.style.color = 'green';
+    }
+
+    function handleSaveAsPdf() {
+        if (familyData.people.length === 0 && familyData.families.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+
+        console.log('Starting PDF generation...');
+        // Show loading message
+        editStatus.textContent = 'Generating PDF...';
+        editStatus.style.color = 'blue';
+
+        // Create a temporary container for the PDF content
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.backgroundColor = 'white';
+        pdfContainer.style.width = '1200px'; // Increased width for better visibility
+        pdfContainer.style.margin = '0 auto';
+        
+        // Add title
+        const title = document.createElement('h1');
+        title.textContent = 'Family Tree';
+        title.style.textAlign = 'center';
+        title.style.marginBottom = '20px';
+        pdfContainer.appendChild(title);
+
+        // Add current date
+        const date = document.createElement('p');
+        date.textContent = `Generated on: ${new Date().toLocaleDateString()}`;
+        date.style.textAlign = 'center';
+        date.style.marginBottom = '20px';
+        pdfContainer.appendChild(date);
+
+        // Create a container for the Cytoscape image
+        const cyImageContainer = document.createElement('div');
+        cyImageContainer.style.width = '100%';
+        cyImageContainer.style.marginBottom = '20px';
+        cyImageContainer.style.textAlign = 'center';
+        pdfContainer.appendChild(cyImageContainer);
+
+        try {
+            console.log('Capturing Cytoscape image...');
+            
+            // Fit the view to show all elements
+            cy.fit();
+            
+            // Add some padding around the view
+            const padding = 30;
+            cy.zoom({
+                level: cy.zoom() * 0.8, // Zoom out slightly to ensure all nodes are visible
+                renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+            });
+
+            // Capture Cytoscape as image with higher quality
+            const jpgDataUrl = cy.jpg({
+                output: 'base64',
+                bg: 'white',
+                full: true,
+                quality: 1.0,
+                scale: 3, // Increased scale for better resolution
+                maxWidth: 2000, // Maximum width for the image
+                maxHeight: 2000 // Maximum height for the image
+            });
+
+            console.log('Creating image element...');
+            // Create an image element
+            const img = document.createElement('img');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            cyImageContainer.appendChild(img);
+
+            // Create a promise to handle image loading
+            const imageLoadPromise = new Promise((resolve, reject) => {
+                img.onload = () => {
+                    console.log('Image loaded successfully');
+                    resolve();
+                };
+                img.onerror = (err) => {
+                    console.error('Error loading image:', err);
+                    reject(err);
+                };
+                // Ensure the data URL is properly formatted
+                const formattedDataUrl = jpgDataUrl.startsWith('data:image/jpeg;base64,') 
+                    ? jpgDataUrl 
+                    : `data:image/jpeg;base64,${jpgDataUrl}`;
+                img.src = formattedDataUrl;
+            });
+
+            // Add people list
+            const peopleList = document.createElement('div');
+            peopleList.style.marginTop = '20px';
+            peopleList.style.pageBreakBefore = 'always'; // Force a new page before the people list
+            peopleList.style.pageBreakInside = 'avoid'; // Prevent page break inside the list
+            
+            const peopleTitle = document.createElement('h1');
+            peopleTitle.textContent = 'People in Family Tree';
+            peopleTitle.style.textAlign = 'center';
+            peopleTitle.style.marginBottom = '20px';
+            peopleList.appendChild(peopleTitle);
+
+            // Sort people by surname and given name for better organization
+            const sortedPeople = [...familyData.people].sort((a, b) => {
+                const nameA = a.names?.[0]?.surname || '' + a.names?.[0]?.given || '';
+                const nameB = b.names?.[0]?.surname || '' + b.names?.[0]?.given || '';
+                return nameA.localeCompare(nameB);
+            });
+
+            // Create a container for the people list with better styling
+            const peopleListContainer = document.createElement('div');
+            peopleListContainer.style.display = 'grid';
+            peopleListContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))'; // Reduced from 300px
+            peopleListContainer.style.gap = '10px';
+            peopleListContainer.style.marginTop = '10px';
+            peopleListContainer.style.pageBreakInside = 'avoid'; // Prevent page break inside the container
+
+            sortedPeople.forEach(person => {
+                const personDiv = document.createElement('div');
+                personDiv.style.marginBottom = '10px';
+                personDiv.style.padding = '10px';
+                personDiv.style.border = '1px solid #eee';
+                personDiv.style.borderRadius = '5px';
+                personDiv.style.pageBreakInside = 'avoid'; // Prevent page break inside person details
+                personDiv.style.height = 'fit-content'; // Ensure div fits its content
+                personDiv.style.minHeight = '100px'; // Minimum height to prevent squishing
+
+                // Get primary name
+                const primaryName = person.names?.[0] || {};
+                const displayName = `${primaryName.surname || ''} ${primaryName.given || ''}`.trim() || person.id;
+
+                // Add person details
+                const namePara = document.createElement('p');
+                namePara.style.fontWeight = 'bold';
+                namePara.style.marginBottom = '5px';
+                namePara.style.fontSize = '14px'; // Slightly smaller font
+                namePara.textContent = displayName;
+                personDiv.appendChild(namePara);
+
+                // Add ID
+                const idPara = document.createElement('p');
+                idPara.style.fontSize = '0.7em';
+                idPara.style.color = '#666';
+                idPara.style.marginBottom = '5px';
+                idPara.textContent = `ID: ${person.id}`;
+                personDiv.appendChild(idPara);
+
+                // Add gender if available
+                if (person.gender) {
+                    const genderPara = document.createElement('p');
+                    genderPara.style.marginBottom = '5px';
+                    genderPara.style.fontSize = '12px';
+                    genderPara.textContent = `Gender: ${person.gender}`;
+                    personDiv.appendChild(genderPara);
+                }
+
+                // Add events if available
+                const personEvents = familyData.events.filter(e => e.personRef === person.id);
+                if (personEvents.length > 0) {
+                    const eventsPara = document.createElement('p');
+                    eventsPara.style.marginBottom = '5px';
+                    eventsPara.style.fontSize = '12px';
+                    eventsPara.textContent = 'Events:';
+                    const eventsList = document.createElement('ul');
+                    eventsList.style.marginLeft = '15px';
+                    eventsList.style.marginTop = '5px';
+                    eventsList.style.fontSize = '11px';
+                    personEvents.forEach(event => {
+                        const eventItem = document.createElement('li');
+                        eventItem.style.marginBottom = '2px';
+                        const dateStr = event.date?.value ? ` (${event.date.value})` : '';
+                        const placeStr = event.placeRef ? ` at ${event.placeRef}` : '';
+                        eventItem.textContent = `${event.type}${dateStr}${placeStr}`;
+                        eventsList.appendChild(eventItem);
+                    });
+                    eventsPara.appendChild(eventsList);
+                    personDiv.appendChild(eventsPara);
+                }
+
+                // Add family relationships
+                const relationshipsPara = document.createElement('p');
+                relationshipsPara.style.marginBottom = '5px';
+                relationshipsPara.style.fontSize = '12px';
+                relationshipsPara.textContent = 'Relationships:';
+                const relationshipsList = document.createElement('ul');
+                relationshipsList.style.marginLeft = '15px';
+                relationshipsList.style.marginTop = '5px';
+                relationshipsList.style.fontSize = '11px';
+
+                // Add parent family if exists
+                if (person.familiesAsChild?.length > 0) {
+                    const parentFamily = familyData.families.find(f => f.id === person.familiesAsChild[0]);
+                    if (parentFamily) {
+                        const parents = parentFamily.partners.map(pid => {
+                            const parent = familyData.people.find(p => p.id === pid);
+                            const parentName = parent?.names?.[0];
+                            return parentName ? `${parentName.surname || ''} ${parentName.given || ''}`.trim() : pid;
+                        }).join(' and ');
+                        const relationshipItem = document.createElement('li');
+                        relationshipItem.textContent = `Child of ${parents}`;
+                        relationshipsList.appendChild(relationshipItem);
+                    }
+                }
+
+                // Add spouse family if exists
+                if (person.familiesAsSpouse?.length > 0) {
+                    const spouseFamily = familyData.families.find(f => f.id === person.familiesAsSpouse[0]);
+                    if (spouseFamily) {
+                        const spouse = spouseFamily.partners.find(pid => pid !== person.id);
+                        if (spouse) {
+                            const spousePerson = familyData.people.find(p => p.id === spouse);
+                            const spouseName = spousePerson?.names?.[0];
+                            if (spouseName) {
+                                const relationshipItem = document.createElement('li');
+                                relationshipItem.textContent = `Spouse of ${spouseName.surname || ''} ${spouseName.given || ''}`.trim();
+                                relationshipsList.appendChild(relationshipItem);
+                            }
+                        }
+                    }
+                }
+
+                if (relationshipsList.children.length > 0) {
+                    relationshipsPara.appendChild(relationshipsList);
+                    personDiv.appendChild(relationshipsPara);
+                }
+
+                peopleListContainer.appendChild(personDiv);
+            });
+
+            peopleList.appendChild(peopleListContainer);
+            pdfContainer.appendChild(peopleList);
+
+            // Configure PDF options with better page handling
+            const options = {
+                margin: 15,
+                filename: currentFileName ? `${currentFileName.replace('.json', '')}.pdf` : 'family_tree.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { 
+                    scale: 3,
+                    useCORS: true,
+                    logging: true,
+                    allowTaint: true,
+                    width: 1200,
+                    height: 2000
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a3',
+                    orientation: 'landscape'
+                },
+                pagebreak: {
+                    mode: ['avoid-all', 'css', 'legacy'],
+                    before: '.page-break',
+                    after: '.page-break',
+                    avoid: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'div', 'img']
+                }
+            };
+
+            // Generate and save PDF
+            return html2pdf().set(options).from(pdfContainer).save();
+        } catch (err) {
+            console.error('Error in PDF generation process:', err);
+            editStatus.textContent = 'Error generating PDF. Please try again.';
+            editStatus.style.color = 'red';
+        }
     }
 
 }); // End DOMContentLoaded
