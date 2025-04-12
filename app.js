@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let familyData = { people: [], families: [], events: [], places: [], sources: [], notes: [], meta: {} };
     let cy; // Cytoscape instance
     let currentlyEditingPersonId = null;
+    let currentFileName = null; // Track the currently loaded file name
 
     // --- DOM References ---
     const fileInput = document.getElementById('fileInput');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('searchButton');
     const saveButton = document.getElementById('saveButton');
     const addPersonButton = document.getElementById('addPersonButton');
+    const newButton = document.getElementById('newButton');
     const searchResultsDiv = document.getElementById('searchResults');
     const cyContainer = document.getElementById('cy');
     const detailsPanel = document.getElementById('detailsPanel');
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     saveButton.addEventListener('click', handleSaveFile);
     addPersonButton.addEventListener('click', handleAddPerson);
+    newButton.addEventListener('click', handleNewTree);
     saveChangesButton.addEventListener('click', handleSaveChanges);
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
@@ -96,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = event.target.files[0];
         if (!file) return;
 
+        currentFileName = file.name; // Store the loaded file name
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -640,18 +644,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const a = document.createElement('a');
             a.href = url;
-            // Suggest a filename
-            const defaultFilename = "family_tree_export.json";
-            const currentFilename = fileInput.files[0]?.name; // Get original filename if available
-            a.download = currentFilename || defaultFilename;
+            
+            // If we have a current file name (loaded file), use it
+            if (currentFileName) {
+                a.download = currentFileName;
+            } else {
+                // For new files, prompt for filename
+                const defaultFilename = "family_tree.json";
+                const filename = prompt("Enter filename to save:", defaultFilename);
+                if (!filename) {
+                    URL.revokeObjectURL(url);
+                    return; // User cancelled
+                }
+                a.download = filename.endsWith('.json') ? filename : filename + '.json';
+                currentFileName = a.download; // Store the new filename
+            }
 
-            document.body.appendChild(a); // Append link to body
-            a.click(); // Programmatically click the link to trigger download
-
-            document.body.removeChild(a); // Remove the link
-            URL.revokeObjectURL(url); // Release the object URL
-            editStatus.textContent = 'File saved successfully!';
-             editStatus.style.color = 'green';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            editStatus.textContent = currentFileName ? 
+                `File "${currentFileName}" saved successfully!` : 
+                'File saved successfully!';
+            editStatus.style.color = 'green';
 
         } catch (error) {
             alert(`Error saving file: ${error.message}`);
@@ -777,6 +794,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         eventsContainer.appendChild(eventDiv);
+    }
+
+    function handleNewTree() {
+        // Reset family data to empty state
+        familyData = {
+            people: [],
+            families: [],
+            events: [],
+            places: [],
+            sources: [],
+            notes: [],
+            meta: {
+                description: "New Family Tree",
+                version: "1.0",
+                creationDate: new Date().toISOString(),
+                lastSaved: new Date().toISOString()
+            }
+        };
+
+        // Clear the file input and current file name
+        fileInput.value = '';
+        currentFileName = null;
+
+        // Clear search results
+        clearSearchResults();
+
+        // Hide edit form
+        hideEditForm();
+
+        // Reinitialize Cytoscape with empty data
+        initializeCytoscape();
+
+        // Show success message
+        editStatus.textContent = 'New family tree created!';
+        editStatus.style.color = 'green';
     }
 
 }); // End DOMContentLoaded
