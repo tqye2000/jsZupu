@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('saveButton');
     const addPersonButton = document.getElementById('addPersonButton');
     const newButton = document.getElementById('newButton');
-    const saveAsPdfButton = document.getElementById('saveAsPdfButton');
-    const saveAsSvgButton = document.getElementById('saveAsSvgButton');
+    // const saveAsPdfButton = document.getElementById('saveAsPdfButton');
+    // const saveAsSvgButton = document.getElementById('saveAsSvgButton');
     const searchResultsDiv = document.getElementById('searchResults');
     const cyContainer = document.getElementById('cy');
     const detailsPanel = document.getElementById('detailsPanel');
@@ -53,12 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', handleSaveFile);
     addPersonButton.addEventListener('click', handleAddPerson);
     newButton.addEventListener('click', handleNewTree);
-    saveAsPdfButton.addEventListener('click', handleSaveAsPdf);
-    saveAsSvgButton.addEventListener('click', handleSaveAsSvg);
     saveChangesButton.addEventListener('click', handleSaveChanges);
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
     addEventButton.addEventListener('click', () => addEventField());
+    //saveAsPdfButton.addEventListener('click', handleSaveAsPdf);
+    //saveAsSvgButton.addEventListener('click', handleSaveAsSvg);
+    saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
 
 
     // --- Functions ---
@@ -946,6 +947,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create a new PDF document
         const pdf = new jsPDF('landscape');
         
+        console.log("Font List:", pdf.getFontList());
+
         // Add title
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(20);
@@ -1022,17 +1025,18 @@ document.addEventListener('DOMContentLoaded', () => {
             head: [tableData[0]],
             body: tableData.slice(1),
             theme: 'grid',
-            styles: { fontSize: 10, font: "helvetica"},
+            styles: { fontSize: 8, cellPadding: 2, font: "times" },
             columnStyles: {
                 0: { cellWidth: 30 },  // ID
-                1: { cellWidth: 50 },  // Name
-                2: { cellWidth: 20 },  // Gender
+                1: { cellWidth: 40 },  // Name
+                2: { cellWidth: 15 },  // Gender
                 3: { cellWidth: 30 },  // Birth
                 4: { cellWidth: 30 },  // Death
-                5: { cellWidth: 50 },  // Parents
+                5: { cellWidth: 50, cellWidth: 'wrap' },  // Parents
                 6: { cellWidth: 50 },  // Spouses
-                7: { cellWidth: 50 }   // Children
-            }
+                7: { cellWidth: 50, cellWidth: 'wrap' }   // Children
+            },
+            tableWidth: 'wrap', // Ensure the table fits within the page
         });
         
         // Save the PDF
@@ -1053,6 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create a Blob from the SVG content
         const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
         
+        
         // Create an object URL and trigger a download
         const url = URL.createObjectURL(blob);
         const downloadLink = document.createElement('a');
@@ -1064,6 +1069,140 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clean up
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(url);
+    }
+
+    function handleSaveAsHtml() {
+        if (familyData.people.length === 0 && familyData.families.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+    
+        //Rescale the graph to fit the SVG
+        cy.fit(cy.nodes(), 50); // Fit the graph to the viewport with a 50px padding
+        cy.center(cy.nodes()); // Center the graph
+        cy.resize(); // Resize the graph to fit the viewport
+
+        // Generate SVG content
+        const svgContent = cy.svg({ scale: 1 });
+    
+        // Generate table content
+        const tableData = [
+            ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
+        ];
+    
+        familyData.people.forEach(person => {
+            const primaryName = person.names?.[0] || {};
+            const displayName = `${primaryName.surname || ''} ${primaryName.given || ''}`.trim();
+            const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
+            const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
+    
+            const parents = (person.familiesAsChild || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.partners?.map(pid => {
+                        const parent = familyData.people.find(p => p.id === pid);
+                        const parentName = parent?.names?.[0];
+                        return parentName ? `${parentName.surname || ''} ${parentName.given || ''}`.trim() : pid;
+                    }).join(', ');
+                }).join('; ') || '';
+    
+            const spouses = (person.familiesAsSpouse || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.partners?.filter(pid => pid !== person.id).map(pid => {
+                        const spouse = familyData.people.find(p => p.id === pid);
+                        const spouseName = spouse?.names?.[0];
+                        return spouseName ? `${spouseName.surname || ''} ${spouseName.given || ''}`.trim() : pid;
+                    }).join(', ');
+                }).join('; ') || '';
+    
+            const children = (person.familiesAsSpouse || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.children?.map(cid => {
+                        const child = familyData.people.find(p => p.id === cid);
+                        const childName = child?.names?.[0];
+                        return childName ? `${childName.surname || ''} ${childName.given || ''}`.trim() : cid;
+                    }).join(', ');
+                }).join('; ') || '';
+    
+            tableData.push([
+                person.id,
+                displayName,
+                person.gender || '',
+                birthEvent?.date?.value || '',
+                deathEvent?.date?.value || '',
+                parents,
+                spouses,
+                children
+            ]);
+        });
+    
+        // Create HTML content
+        const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Family Tree</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; }
+            svg { display: block; margin: 0 auto; border: 1px solid #ccc; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background-color: #f4f4f4; }
+        </style>
+    </head>
+    <body>
+        <div class="print-button">
+            <button onclick="window.print()">Print</button>
+        </div>
+        <h1>Family Tree</h1>
+        <div>${svgContent}</div>
+        <table>
+            <thead>
+                <tr>
+                    ${tableData[0].map(header => `<th>${header}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${tableData.slice(1).map(row => `
+                    <tr>
+                        ${row.map(cell => `<td>${cell}</td>`).join('')}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </body>
+    </html>
+        `;
+    
+        // // Create a Blob and trigger download
+        // const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        // const url = URL.createObjectURL(blob);
+
+        // // Open the HTML file in a new tab
+        // window.open(url, '_blank');
+
+        // // Create a download link
+        // const downloadLink = document.createElement('a');
+        // downloadLink.href = url;
+        // downloadLink.download = 'FamilyTree.html';
+        // document.body.appendChild(downloadLink);
+        // downloadLink.click();
+        // document.body.removeChild(downloadLink);
+
+        // // Clean up the URL object
+        // URL.revokeObjectURL(url);
+
+        // Open the HTML content in a new browser window
+        const newWindow = window.open('', '_blank');
+        newWindow.document.open();
+        newWindow.document.write(htmlContent);
+        newWindow.document.close();
+        newWindow.focus();
     }
     
 }); // End DOMContentLoaded
