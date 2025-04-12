@@ -31,7 +31,7 @@ This is a client-side family tree application built using HTML, CSS, and JavaScr
 
 ### Author
 
-This application was created by [Cursor] guided by TQ Ye.
+This application was created by [Cursor/VS Code] guided by TQ Ye.
 
 ---
 
@@ -67,4 +67,4 @@ This application was created by [Cursor] guided by TQ Ye.
 
 ### 作者
 
-本应用程序由[Cursor]根据TQ Ye的指导创建。
+本应用程序由[Cursor/VS Code]根据TQ Ye的指导创建。
