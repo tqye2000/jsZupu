@@ -1,4 +1,4 @@
-# Family Tree Application([中文](#家谱应用程序))
+# Simple Family Tree ([中文](#家谱应用程序))
 
 This is a client-side family tree application built using HTML, CSS, and JavaScript. It uses the Cytoscape.js library for visualizing the family tree and the dagre extension for better tree layout.
 
@@ -35,7 +35,7 @@ This application was created by [Cursor/VS Code] guided by TQ Ye.
 
 ---
 
-# 家谱应用程序 ()
+# 简易家谱
 
 这是一个使用HTML、CSS和JavaScript构建的客户端家谱应用程序。它使用Cytoscape.js库来可视化家谱，并使用dagre扩展来实现更好的树状布局。
 
