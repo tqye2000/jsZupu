@@ -13,11 +13,13 @@ This is a client-side family tree application built using HTML, CSS, and JavaScr
 
 ### How to Use
 
-1. Load a family tree file in JSON format using the "Load Family Tree" button.
+1. Load a family tree file (see examples) in JSON format using the "Load Family Tree" button.
 2. Use the search bar to find people by name.
 3. Click on a person in the graph or search results to view and edit their details.
 4. Use the "Add New Person" button to add new people to the family tree.
-5. Use the "Save" button to save the current family tree data.
+5. Use the "Save" button to save the current family tree data. 
+   However, the file is saved in the "download" folder!
+6. Use the "Print" button to print the current family tree.
 
 ### Technologies Used
 
@@ -48,11 +50,12 @@ This application was created by [Cursor] guided by TQ Ye.
 
 ### 使用方法
 
-1. 使用"加载家谱"按钮加载JSON格式的家谱文件。
+1. 使用"加载家谱"按钮加载JSON格式的家谱文件 (见examples)。
 2. 使用搜索栏按姓名查找人。
 3. 点击图表或搜索结果中的某个人来查看和编辑他们的详细信息。
 4. 使用"添加新人"按钮向家谱中添加新的人。
-5. 使用"保存"按钮保存当前家谱数据。
+5. 使用"保存"按钮下载当前家谱数据。注意：下载的家谱文件不一定是你上载的文件夹！
+6. 使用“打印”按钮打印当前的家谱。
 
 ### 使用技术
 
