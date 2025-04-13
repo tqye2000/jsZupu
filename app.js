@@ -103,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     
-
     function handleFileLoad(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -373,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update family selectors
         updateFamilySelectors(person);
         
-        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`;
+        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personSurnameInput.value} ${personGivenNameInput.value}`;
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
         editStatus.textContent = '';

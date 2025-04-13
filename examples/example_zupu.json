@@ -1,0 +1,998 @@
+{
+  "meta": {
+    "description": "Example JSON Structure for a Comprehensive Family Tree",
+    "version": "1.0",
+    "creationDate": "2025-04-12",
+    "submitter": "Your Name/Org",
+    "schemaNote": "This structure relies on application logic to resolve references (e.g., 'p1', 'f1', 'e1').",
+    "lastSaved": "2025-04-13T19:41:51.789Z"
+  },
+  "people": [
+    {
+      "id": "p1",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "公",
+          "surname": "王"
+        }
+      ],
+      "eventRefs": [
+        "e1",
+        "e2"
+      ],
+      "familiesAsSpouse": [
+        "f1"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": [
+        "n1"
+      ]
+    },
+    {
+      "id": "p2",
+      "gender": "female",
+      "names": [
+        {
+          "type": "married",
+          "given": "氏",
+          "surname": "王"
+        }
+      ],
+      "eventRefs": [
+        "e5"
+      ],
+      "familiesAsSpouse": [
+        "f1"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p3",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "志楷",
+          "surname": "王"
+        }
+      ],
+      "eventRefs": [
+        "e4"
+      ],
+      "familiesAsSpouse": [
+        "f_1744406313738"
+      ],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p4",
+      "gender": "female",
+      "names": [
+        {
+          "type": "birth",
+          "given": "志贤",
+          "surname": "王"
+        }
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406637659"
+      ],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p5",
+      "gender": "male",
+      "names": [
+        {
+          "type": "birth",
+          "given": "志模",
+          "surname": "王"
+        }
+      ],
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f2"
+      ],
+      "familiesAsChild": [
+        "f1"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406248475",
+      "names": [
+        {
+          "type": "birth",
+          "given": "玉清",
+          "surname": "张"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406313738"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406516682",
+      "names": [
+        {
+          "type": "birth",
+          "given": "新秀",
+          "surname": "胡"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f2"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406615763",
+      "names": [
+        {
+          "type": "birth",
+          "given": "伟杰",
+          "surname": "董"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406637659"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406751354",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏华",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406785554"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406801018",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏旗",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406825786"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406837331",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏喜",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406869146"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406880650",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏提",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744406905970"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744406926762",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏仁",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407009426"
+      ],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407017995",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏达",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407046810"
+      ],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407053586",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏则",
+          "surname": "王"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407101242"
+      ],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407123403",
+      "names": [
+        {
+          "type": "birth",
+          "given": "莲珍",
+          "surname": "王"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744455929070"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407172523",
+      "names": [
+        {
+          "type": "birth",
+          "given": "莲英",
+          "surname": "王"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407545154"
+      ],
+      "familiesAsChild": [
+        "f_1744406313738"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407384114",
+      "names": [
+        {
+          "type": "birth",
+          "given": "玉珍",
+          "surname": "王"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407462706",
+      "names": [
+        {
+          "type": "birth",
+          "given": "宏杰",
+          "surname": "王"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [],
+      "familiesAsChild": [
+        "f2"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407515378",
+      "names": [
+        {
+          "type": "birth",
+          "given": "伟",
+          "surname": "宋"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407545154"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407607738",
+      "names": [
+        {
+          "type": "birth",
+          "given": "大清",
+          "surname": "宋·"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407632378"
+      ],
+      "familiesAsChild": [
+        "f_1744407545154"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744407641626",
+      "names": [
+        {
+          "type": "birth",
+          "given": "大明",
+          "surname": "宋"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407662210"
+      ],
+      "familiesAsChild": [
+        "f_1744407545154"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744408115570",
+      "names": [
+        {
+          "type": "birth",
+          "given": "丽华",
+          "surname": "陈"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407632378"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744408176945",
+      "names": [
+        {
+          "type": "birth",
+          "given": "秀兰",
+          "surname": "吕"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744407662210"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744455892334",
+      "names": [
+        {
+          "type": "birth",
+          "given": "洪君",
+          "surname": "周"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744455929070"
+      ],
+      "familiesAsChild": [],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744456072574",
+      "names": [
+        {
+          "type": "birth",
+          "given": "林",
+          "surname": "周"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744456102446"
+      ],
+      "familiesAsChild": [
+        "f_1744455929070"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744456107974",
+      "names": [
+        {
+          "type": "birth",
+          "given": "安",
+          "surname": "周"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744456133822"
+      ],
+      "familiesAsChild": [
+        "f_1744455929070"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744456138134",
+      "names": [
+        {
+          "type": "birth",
+          "given": "敏",
+          "surname": "周"
+        }
+      ],
+      "gender": "female",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744456161870"
+      ],
+      "familiesAsChild": [
+        "f_1744455929070"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744487931021",
+      "names": [
+        {
+          "type": "birth",
+          "given": "海威",
+          "surname": "宋"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744487986861"
+      ],
+      "familiesAsChild": [
+        "f_1744407632378"
+      ],
+      "noteRefs": []
+    },
+    {
+      "id": "p_1744487996197",
+      "names": [
+        {
+          "type": "birth",
+          "given": "海斌",
+          "surname": "宋"
+        }
+      ],
+      "gender": "male",
+      "eventRefs": [],
+      "familiesAsSpouse": [
+        "f_1744488052325"
+      ],
+      "familiesAsChild": [
+        "f_1744407662210"
+      ],
+      "noteRefs": []
+    }
+  ],
+  "families": [
+    {
+      "id": "f1",
+      "partners": [
+        "p1",
+        "p2"
+      ],
+      "children": [
+        "p5",
+        "p3",
+        "p4"
+      ],
+      "eventRefs": [
+        "e3"
+      ],
+      "noteRefs": [
+        "n2"
+      ]
+    },
+    {
+      "id": "f2",
+      "partners": [
+        "p5",
+        "p_1744406516682"
+      ],
+      "children": [
+        "p_1744406926762",
+        "p_1744407017995",
+        "p_1744407053586",
+        "p_1744407384114",
+        "p_1744407462706"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406313738",
+      "partners": [
+        "p3",
+        "p_1744406248475"
+      ],
+      "children": [
+        "p_1744406751354",
+        "p_1744406801018",
+        "p_1744406837331",
+        "p_1744406880650",
+        "p_1744407172523",
+        "p_1744407123403"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406637659",
+      "partners": [
+        "p_1744406615763",
+        "p4"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406785554",
+      "partners": [
+        "p_1744406751354"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406825786",
+      "partners": [
+        "p_1744406801018"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406869146",
+      "partners": [
+        "p_1744406837331"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744406905970",
+      "partners": [
+        "p_1744406880650"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407009274",
+      "partners": [],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407009426",
+      "partners": [
+        "p_1744406926762"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407046810",
+      "partners": [
+        "p_1744407017995"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407101114",
+      "partners": [],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407101242",
+      "partners": [
+        "p_1744407053586"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407545154",
+      "partners": [
+        "p_1744407172523",
+        "p_1744407515378"
+      ],
+      "children": [
+        "p_1744407607738",
+        "p_1744407641626"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407632258",
+      "partners": [],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407632313",
+      "partners": [],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407632378",
+      "partners": [
+        "p_1744407607738",
+        "p_1744408115570"
+      ],
+      "children": [
+        "p_1744487931021"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744407662210",
+      "partners": [
+        "p_1744407641626",
+        "p_1744408176945"
+      ],
+      "children": [
+        "p_1744487996197"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744455929070",
+      "partners": [
+        "p_1744455892334",
+        "p_1744407123403"
+      ],
+      "children": [
+        "p_1744456072574",
+        "p_1744456107974",
+        "p_1744456138134"
+      ],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744456102446",
+      "partners": [
+        "p_1744456072574"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744456133822",
+      "partners": [
+        "p_1744456107974"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744456161870",
+      "partners": [
+        "p_1744456138134"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744487986861",
+      "partners": [
+        "p_1744487931021"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    },
+    {
+      "id": "f_1744488052325",
+      "partners": [
+        "p_1744487996197"
+      ],
+      "children": [],
+      "eventRefs": [],
+      "noteRefs": []
+    }
+  ],
+  "events": [
+    {
+      "id": "e3",
+      "type": "marriage",
+      "familyRef": "f1",
+      "date": {
+        "value": "1975-06-20",
+        "qualifier": "about"
+      },
+      "placeRef": "pl1",
+      "sourceRefs": [
+        "s3"
+      ],
+      "noteRefs": [
+        "n3"
+      ]
+    },
+    {
+      "id": "e_1744407991778",
+      "type": "birth",
+      "personRef": "p_1744407172523",
+      "date": {
+        "value": "1935",
+        "qualifier": "about"
+      },
+      "placeRef": "江西"
+    },
+    {
+      "id": "e_1744408035057",
+      "type": "birth",
+      "personRef": "p_1744407515378",
+      "date": {
+        "value": "1935",
+        "qualifier": "about"
+      },
+      "placeRef": "江西"
+    },
+    {
+      "id": "e_1744408056906",
+      "type": "birth",
+      "personRef": "p_1744407607738",
+      "date": {
+        "value": "1967",
+        "qualifier": "exact"
+      },
+      "placeRef": "四川"
+    },
+    {
+      "id": "e_1744408085802",
+      "type": "birth",
+      "personRef": "p_1744407641626",
+      "date": {
+        "value": "1969",
+        "qualifier": "exact"
+      },
+      "placeRef": "上海"
+    },
+    {
+      "id": "e_1744408130882",
+      "type": "birth",
+      "personRef": "p_1744408115570",
+      "date": {
+        "value": "1968",
+        "qualifier": "exact"
+      },
+      "placeRef": "甘肃"
+    },
+    {
+      "id": "e_1744408192426",
+      "type": "birth",
+      "personRef": "p_1744408176945",
+      "date": {
+        "value": "1964",
+        "qualifier": "exact"
+      },
+      "placeRef": "四川"
+    },
+    {
+      "id": "e_1744487958517",
+      "type": "birth",
+      "personRef": "p_1744487931021",
+      "date": {
+        "value": "1994-06-15",
+        "qualifier": "exact"
+      },
+      "placeRef": "Manchester, England"
+    },
+    {
+      "id": "e_1744488018309",
+      "type": "birth",
+      "personRef": "p_1744487996197",
+      "date": {
+        "value": "1989-08-12",
+        "qualifier": "about"
+      },
+      "placeRef": "成都"
+    }
+  ],
+  "places": [
+    {
+      "id": "pl1",
+      "name": "江西, 中国",
+      "type": "City",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    {
+      "id": "pl2",
+      "name": "四川, 中国",
+      "type": "City",
+      "coordinates": {
+        "latitude": 30.5728,
+        "longitude": 104.0668
+      }
+    },
+    {
+      "id": "pl3",
+      "name": "成都",
+      "type": "City",
+      "partOfRef": "pl2"
+    },
+    {
+      "id": "pl4",
+      "name": "Someville, OtherCounty, Anystate, USA",
+      "type": "Town"
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Birth Certificate Index, Anystate Vital Records, Vol 3",
+      "citation": "Anystate Dept of Health, Birth Records 1950-1955, Vol 3, Page 123, Entry #5.",
+      "repository": "Anystate Archives",
+      "media": [
+        {
+          "type": "digitalImage",
+          "url": "http://example.com/images/bc_johndoe.jpg"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Obituary for John Doe, Anytown Times",
+      "publicationDate": "2020-11-03",
+      "citation": "Anytown Times, Anytown, Anystate. 3 Nov 2020. Page B4."
+    },
+    {
+      "id": "s3",
+      "title": "Marriage License Application #12345",
+      "citation": "AnyCounty Clerk's Office, Marriage Licenses 1975, Book 12, Page 56."
+    },
+    {
+      "id": "s4",
+      "title": "1960 US Federal Census",
+      "citation": "1960 U.S. census, Anystate, OtherCounty, Someville, enumeration district (ED) 10-5, sheet 8A, dwelling 150, family 165, Jane Smith; digital image, Ancestry.com (http://www.ancestry.com : accessed 27 Oct 2023); citing NARA microfilm publication T627, roll 9999."
+    },
+    {
+      "id": "s5",
+      "title": "Personal Interview with Jane Doe",
+      "interviewDate": "2005-05-10",
+      "interviewer": "Your Name"
+    }
+  ],
+  "notes": [
+    {
+      "id": "n1",
+      "text": "John Doe was known for his love of gardening and volunteered at the local library."
+    },
+    {
+      "id": "n2",
+      "text": "This family unit moved from Anytown to Sometown around 1985 according to family letters (see source S6 - not defined above)."
+    },
+    {
+      "id": "n3",
+      "text": "The marriage certificate notes the ceremony was performed by Rev. Michael Smith. Witnessed by Alice Brown and Robert Green."
+    }
+  ]
+}
