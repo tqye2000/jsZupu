@@ -1,6 +1,8 @@
 # Simple Family Tree ([中文](#家谱应用程序))
 
-This is a client-side family tree application built using HTML, CSS, and JavaScript. It uses the Cytoscape.js library for visualizing the family tree and the dagre extension for better tree layout.
+This is a client-side family tree application built using HTML, CSS, and JavaScript. 
+## Completely local and private!
+
 
 ### Features
 
@@ -12,6 +14,8 @@ This is a client-side family tree application built using HTML, CSS, and JavaScr
 - Visualize the family tree in a hierarchical layout
 
 ### How to Use
+
+Download the repository to your local folder, then click on the index.html file
 
 1. Load a family tree file (see examples) in JSON format using the "Load Family Tree" button.
 2. Use the search bar to find people by name.
@@ -37,7 +41,9 @@ This application was created by [Cursor/VS Code] guided by TQ Ye.
 
 # 简易家谱
 
-这是一个使用HTML、CSS和JavaScript构建的客户端家谱应用程序。它使用Cytoscape.js库来可视化家谱，并使用dagre扩展来实现更好的树状布局。
+这是一个使用HTML、CSS和JavaScript构建的客户端家族谱应用程序。
+## 完全本地运行本地储存，确保私密！
+---
 
 ### 特点
 
@@ -49,6 +55,8 @@ This application was created by [Cursor/VS Code] guided by TQ Ye.
 - 以层次结构布局可视化家谱
 
 ### 使用方法
+
+将存储库下载到本地一文件夹，然后单击 index_zw.html 文件。
 
 1. 使用"加载家谱"按钮加载JSON格式的家谱文件 (见examples)。
 2. 使用搜索栏按姓名查找人。
