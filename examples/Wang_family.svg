@@ -1,0 +1,278 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="1056" viewBox="0 0 1180 1056">
+<defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.2" stdDeviation="1.2" flood-opacity="0.16"/></filter></defs>
+<rect width="100%" height="100%" fill="white"/>
+<text x="36" y="36" font-size="18" font-weight="700" font-family="Arial, sans-serif">王氏家族关系图（严格核心家庭分组）</text>
+<g stroke="#555" stroke-width="1.4" fill="none">
+<line x1="980.0" y1="548.0" x2="992.0" y2="548.0"/>
+<line x1="810.0" y1="548.0" x2="822.0" y2="548.0"/>
+<line x1="216.0" y1="342.0" x2="228.0" y2="342.0"/>
+<line x1="748.0" y1="342.0" x2="760.0" y2="342.0"/>
+<line x1="900.0" y1="754.0" x2="912.0" y2="754.0"/>
+<line x1="776.0" y1="754.0" x2="788.0" y2="754.0"/>
+<line x1="584.0" y1="136.0" x2="596.0" y2="136.0"/>
+<line x1="986.0" y1="608" x2="986.0" y2="652.72"/>
+<line x1="918.0" y1="652.72" x2="1054.0" y2="652.72"/>
+<line x1="918.0" y1="652.72" x2="918.0" y2="694"/>
+<line x1="986.0" y1="652.72" x2="986.0" y2="694"/>
+<line x1="1054.0" y1="652.72" x2="1054.0" y2="694"/>
+<line x1="816.0" y1="608" x2="816.0" y2="652.72"/>
+<line x1="754.0" y1="652.72" x2="878.0" y2="652.72"/>
+<line x1="754.0" y1="652.72" x2="754.0" y2="694"/>
+<line x1="878.0" y1="652.72" x2="878.0" y2="694"/>
+<line x1="222.0" y1="402" x2="222.0" y2="446.72"/>
+<line x1="86.0" y1="446.72" x2="358.0" y2="446.72"/>
+<line x1="86.0" y1="446.72" x2="86.0" y2="488"/>
+<line x1="154.0" y1="446.72" x2="154.0" y2="488"/>
+<line x1="222.0" y1="446.72" x2="222.0" y2="488"/>
+<line x1="290.0" y1="446.72" x2="290.0" y2="488"/>
+<line x1="358.0" y1="446.72" x2="358.0" y2="488"/>
+<line x1="754.0" y1="402" x2="754.0" y2="446.72"/>
+<line x1="426.0" y1="446.72" x2="1014.0" y2="446.72"/>
+<line x1="426.0" y1="446.72" x2="426.0" y2="488"/>
+<line x1="494.0" y1="446.72" x2="494.0" y2="488"/>
+<line x1="562.0" y1="446.72" x2="562.0" y2="488"/>
+<line x1="630.0" y1="446.72" x2="630.0" y2="488"/>
+<line x1="788.0" y1="446.72" x2="788.0" y2="488"/>
+<line x1="1014.0" y1="446.72" x2="1014.0" y2="488"/>
+<line x1="906.0" y1="814" x2="906.0" y2="858.72"/>
+<line x1="906.0" y1="858.72" x2="906.0" y2="858.72"/>
+<line x1="906.0" y1="858.72" x2="906.0" y2="900"/>
+<line x1="782.0" y1="814" x2="782.0" y2="858.72"/>
+<line x1="782.0" y1="858.72" x2="782.0" y2="858.72"/>
+<line x1="782.0" y1="858.72" x2="782.0" y2="900"/>
+<line x1="590.0" y1="196" x2="590.0" y2="240.72"/>
+<line x1="194.0" y1="240.72" x2="1122.0" y2="240.72"/>
+<line x1="194.0" y1="240.72" x2="194.0" y2="282"/>
+<line x1="726.0" y1="240.72" x2="726.0" y2="282"/>
+<line x1="1122.0" y1="240.72" x2="1122.0" y2="282"/>
+</g>
+<g font-family="Arial, sans-serif">
+<g filter="url(#shadow)">
+<rect x="540.0" y="76" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="562.0" y="89.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="562.0" y="100.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="562.0" y="111.0" text-anchor="middle" font-size="10.5" fill="#111">公</text>
+<text x="581.0" y="86" text-anchor="end" font-size="8.5" fill="#666">G1</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="596.0" y="76" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="618.0" y="89.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="618.0" y="100.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="618.0" y="111.0" text-anchor="middle" font-size="10.5" fill="#111">氏</text>
+<text x="637.0" y="86" text-anchor="end" font-size="8.5" fill="#666">G1</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="172.0" y="282" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="194.0" y="295.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="194.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="194.0" y="317.0" text-anchor="middle" font-size="10.5" fill="#111">志</text>
+<text x="194.0" y="328.0" text-anchor="middle" font-size="10.5" fill="#111">模</text>
+<text x="213.0" y="292" text-anchor="end" font-size="8.5" fill="#666">G2</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="228.0" y="282" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="250.0" y="295.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="250.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#111">胡</text>
+<text x="250.0" y="317.0" text-anchor="middle" font-size="10.5" fill="#111">新</text>
+<text x="250.0" y="328.0" text-anchor="middle" font-size="10.5" fill="#111">秀</text>
+<text x="269.0" y="292" text-anchor="end" font-size="8.5" fill="#666">G2</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="64.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="86.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="86.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="86.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="86.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">仁</text>
+<text x="105.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="132.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="154.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="154.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="154.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="154.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">达</text>
+<text x="173.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="200.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="222.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="222.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="222.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="222.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">则</text>
+<text x="241.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="268.0" y="488" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="290.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="290.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="290.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">玉</text>
+<text x="290.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">珍</text>
+<text x="309.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="336.0" y="488" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="358.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="358.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="358.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="358.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">杰</text>
+<text x="377.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="704.0" y="282" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="726.0" y="295.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="726.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="726.0" y="317.0" text-anchor="middle" font-size="10.5" fill="#111">志</text>
+<text x="726.0" y="328.0" text-anchor="middle" font-size="10.5" fill="#111">楷</text>
+<text x="745.0" y="292" text-anchor="end" font-size="8.5" fill="#666">G2</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="760.0" y="282" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="782.0" y="295.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="782.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#111">张</text>
+<text x="782.0" y="317.0" text-anchor="middle" font-size="10.5" fill="#111">玉</text>
+<text x="782.0" y="328.0" text-anchor="middle" font-size="10.5" fill="#111">清</text>
+<text x="801.0" y="292" text-anchor="end" font-size="8.5" fill="#666">G2</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="404.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="426.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="426.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="426.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="426.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">华</text>
+<text x="445.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="472.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="494.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="494.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="494.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="494.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">旗</text>
+<text x="513.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="540.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="562.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="562.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="562.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="562.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">喜</text>
+<text x="581.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="608.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="630.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="630.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="630.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">宏</text>
+<text x="630.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">提</text>
+<text x="649.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="766.0" y="488" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="788.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="788.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="788.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">莲</text>
+<text x="788.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">英</text>
+<text x="807.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="822.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="844.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="844.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">宋</text>
+<text x="844.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">伟</text>
+<text x="863.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="732.0" y="694" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="754.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="754.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">宋</text>
+<text x="754.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">·</text>
+<text x="754.0" y="740.0" text-anchor="middle" font-size="10.5" fill="#111">大</text>
+<text x="754.0" y="751.0" text-anchor="middle" font-size="10.5" fill="#111">清</text>
+<text x="773.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="788.0" y="694" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="810.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="810.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">陈</text>
+<text x="810.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">丽</text>
+<text x="810.0" y="740.0" text-anchor="middle" font-size="10.5" fill="#111">华</text>
+<text x="829.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="760.0" y="900" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="782.0" y="913.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="782.0" y="924.0" text-anchor="middle" font-size="10.5" fill="#111">宋</text>
+<text x="782.0" y="935.0" text-anchor="middle" font-size="10.5" fill="#111">海</text>
+<text x="782.0" y="946.0" text-anchor="middle" font-size="10.5" fill="#111">威</text>
+<text x="801.0" y="910" text-anchor="end" font-size="8.5" fill="#666">G5</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="856.0" y="694" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="878.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="878.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">宋</text>
+<text x="878.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">大</text>
+<text x="878.0" y="740.0" text-anchor="middle" font-size="10.5" fill="#111">明</text>
+<text x="897.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="912.0" y="694" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="934.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="934.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">吕</text>
+<text x="934.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">秀</text>
+<text x="934.0" y="740.0" text-anchor="middle" font-size="10.5" fill="#111">兰</text>
+<text x="953.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="884.0" y="900" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="906.0" y="913.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="906.0" y="924.0" text-anchor="middle" font-size="10.5" fill="#111">宋</text>
+<text x="906.0" y="935.0" text-anchor="middle" font-size="10.5" fill="#111">海</text>
+<text x="906.0" y="946.0" text-anchor="middle" font-size="10.5" fill="#111">斌</text>
+<text x="925.0" y="910" text-anchor="end" font-size="8.5" fill="#666">G5</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="992.0" y="488" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="1014.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="1014.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="1014.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">莲</text>
+<text x="1014.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">珍</text>
+<text x="1033.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="936.0" y="488" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="958.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="958.0" y="512.0" text-anchor="middle" font-size="10.5" fill="#111">周</text>
+<text x="958.0" y="523.0" text-anchor="middle" font-size="10.5" fill="#111">洪</text>
+<text x="958.0" y="534.0" text-anchor="middle" font-size="10.5" fill="#111">君</text>
+<text x="977.0" y="498" text-anchor="end" font-size="8.5" fill="#666">G3</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="896.0" y="694" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="918.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="918.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">周</text>
+<text x="918.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">林</text>
+<text x="937.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="964.0" y="694" width="44" height="120" rx="10" ry="10" fill="#F2F6FF" stroke="#2F5AA8" stroke-width="1.6"/>
+<text x="986.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♂</text>
+<text x="986.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">周</text>
+<text x="986.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">安</text>
+<text x="1005.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="1032.0" y="694" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="1054.0" y="707.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="1054.0" y="718.0" text-anchor="middle" font-size="10.5" fill="#111">周</text>
+<text x="1054.0" y="729.0" text-anchor="middle" font-size="10.5" fill="#111">敏</text>
+<text x="1073.0" y="704" text-anchor="end" font-size="8.5" fill="#666">G4</text>
+</g>
+<g filter="url(#shadow)">
+<rect x="1100.0" y="282" width="44" height="120" rx="10" ry="10" fill="#FFF2F6" stroke="#A82F5A" stroke-width="1.6"/>
+<text x="1122.0" y="295.0" text-anchor="middle" font-size="10.5" fill="#111">♀</text>
+<text x="1122.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#111">王</text>
+<text x="1122.0" y="317.0" text-anchor="middle" font-size="10.5" fill="#111">志</text>
+<text x="1122.0" y="328.0" text-anchor="middle" font-size="10.5" fill="#111">贤</text>
+<text x="1141.0" y="292" text-anchor="end" font-size="8.5" fill="#666">G2</text>
+</g>
+</g>
+</svg>
