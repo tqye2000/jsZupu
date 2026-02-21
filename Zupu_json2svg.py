@@ -1,3 +1,17 @@
+#######################################################
+# Zupu_json2svg.py
+# Convert Zupu JSON export to a strict nuclear-family SVG tree.
+# Usage: python Zupu_json2svg.py --input Zhang_tree.json --output Zhang_family.svg --surname 张
+# The algorithm:
+# 1) Identify root ancestors based on surname and no parent families.
+# 2) Traverse descendants and spouses to find included people and families.
+# 3) Infer generations by iterative constraint relaxation.
+# 4) Determine primary descendant family for each child.
+# 5) Recursively compute subtree widths for strict nuclear blocks.
+# 6) Place families recursively, anchored on primary descendant families.
+# 7) Build marriage and parent-child edges.
+# 8) Emit SVG with vertical text and simple styling.
+#######################################################
 import json
 import argparse
 from collections import defaultdict, deque
@@ -63,6 +77,7 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         seen.add(pid)
         included_people.add(pid)
 
+        # Add families where this person is a spouse
         for fid in people.get(pid, {}).get("familiesAsSpouse", []):
             if fid not in families:
                 continue
@@ -75,6 +90,22 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
             for c in fam.get("children", []):
                 included_people.add(c)
                 q.append(c)
+
+        # Also add families where this person is a child (to include parent relationships)
+        for fid in people.get(pid, {}).get("familiesAsChild", []):
+            if fid not in families:
+                continue
+            included_families.add(fid)
+            fam = families[fid]
+
+            for sp in fam.get("partners", []):
+                if sp not in included_people:
+                    included_people.add(sp)
+
+            for c in fam.get("children", []):
+                if c not in included_people:
+                    included_people.add(c)
+                    q.append(c)
 
     # prune families to those touching included people
     included_families = {
@@ -189,12 +220,16 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         return w
 
     # root families = families containing a root partner
-    root_fams = [
+    # Primary: families whose partner is a genuine root (matched surname)
+    primary_root_fams = [
         fid for fid in included_families
         if any(p in roots for p in families[fid].get("partners", []))
     ]
+    
+    # Only use fallback if no primary roots found
+    root_fams = primary_root_fams
     if not root_fams:
-        # fallback
+        # fallback: use families with a partner who has no familiesAsChild
         for fid in included_families:
             partners = families[fid].get("partners", [])
             if any(len(people.get(p, {}).get("familiesAsChild", [])) == 0 for p in partners):
@@ -281,8 +316,10 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
     x_cursor = PAD
     y_start = PAD + TITLE_H
     for rf in root_fams:
-        place_family(rf, x_cursor, y_start)
-        x_cursor += subtree_w[rf] + BLOCK_GAP
+        # Skip if this family was already placed as a descendant
+        if rf not in fam_mid_bottom:
+            place_family(rf, x_cursor, y_start)
+            x_cursor += subtree_w[rf] + BLOCK_GAP
 
     if not pos:
         raise ValueError("No nodes were positioned. Check JSON structure and surname scope.")

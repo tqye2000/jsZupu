@@ -1,1 +1,1 @@
-python Zupu_json2svg.py --input Ye_tree.json --output Ye_family.svg --surname 叶
+C:\Users\yetid8\AppData\Local\Programs\Python\Python311\python Zupu_json2svg.py --input Ye_tree.json --output Zheng_family.svg --surname 郑

@@ -23,7 +23,9 @@ Download the repository to your local folder, then click on the index.html file
 4. Click on a person in the graph or search results to view and edit their details.
 5. Use the "Save" button to save the current family tree data. 
    <br>However, the file is saved in the "download" folder!
-6. Use the "Print" button to print the current family tree.
+6. Convert the JSON file to SVG file for visualisation and printing
+   <br>run: python Zupu_json2svg.py --input XFamily_tree.json --output XFamily_family.svg --surname 张
+   <br>open the SVG file with any web browser
 
 ### Technologies Used
 
@@ -63,7 +65,11 @@ This application was created by [Cursor/VS Code] guided by <a href="mailto:tqye@
 3. 使用搜索栏按姓名查找人。
 4. 点击图表或搜索结果中的某个人来查看和编辑他们的详细信息。
 5. 使用"保存"按钮下载当前家谱数据。<br>注意：下载的家谱文件不一定是你上载的文件夹！
-6. 使用“打印”按钮打印当前的家谱。
+
+6. 将JSON文件转换为SVG可视图：
+   运行：>python Zupu_json2svg.py --input XFamily_tree.json --output XFamily_family.svg --surname 张
+   在任何网页浏览器上即可打开 XFamily_family.svg
+
 
 ### 使用技术
 
