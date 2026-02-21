@@ -1,7 +1,10 @@
 # Simple Family Tree ([中文](#家谱应用程序))
 
+![Family Tree Example](examples/example.png)
+
 This is a client-side family tree application built using HTML, CSS, and JavaScript. 
 ## Completely local and private!
+
 
 
 ### Features
