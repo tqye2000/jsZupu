@@ -580,7 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         editStatus.textContent = 'Changes saved!';
         editStatus.style.color = 'green';
-        saveChangesButton.textContent = "Save Changes"; // Reset button text
         detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`; // Update panel title
 
         // Optionally hide form after a short delay
