@@ -171,10 +171,18 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
     # 4) Primary descendant family per child
     # -------------------------
     primary_desc_fam: Dict[str, str] = {}
+    # Also track childless spouse families so we can still display the spouse
+    childless_spouse_fam: Dict[str, str] = {}
     for c in included_people:
         c_fams = [fid for fid in spouse_fams_of.get(c, []) if families[fid].get("children")]
         if c_fams:
             primary_desc_fam[c] = sorted(c_fams)[0]
+        else:
+            # No families with children — pick a childless spouse family if one exists
+            c_spouse_fams = [fid for fid in spouse_fams_of.get(c, [])
+                            if fid in included_families and len(families[fid].get("partners", [])) >= 2]
+            if c_spouse_fams:
+                childless_spouse_fam[c] = sorted(c_spouse_fams)[0]
 
     # -------------------------
     # 5) Recursive width for strict nuclear blocks
@@ -336,6 +344,22 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
 
                 desc_y0 = cy
                 place_family(df, desc_x0, desc_y0, guard)
+
+            elif c in childless_spouse_fam:
+                # Place spouse from a childless family next to this child
+                csfid = childless_spouse_fam[c]
+                if csfid not in fam_mid_bottom:
+                    cspartners = [p for p in families[csfid].get("partners", []) if p in included_people]
+                    if c in cspartners:
+                        # Place all partners of this childless family in order
+                        cpw = len(cspartners) * NODE_W + max(0, len(cspartners) - 1) * PARTNER_GAP
+                        cpx = cx + (sw - cpw) / 2
+                        for ci, cp in enumerate(cspartners):
+                            pos[cp] = (cpx + ci * (NODE_W + PARTNER_GAP), cy)
+                        # Record family midpoint for edge drawing
+                        left = cpx
+                        right = cpx + cpw
+                        fam_mid_bottom[csfid] = ((left + right) / 2, cy + NODE_H)
 
             cx += sw + CHILD_GAP
 

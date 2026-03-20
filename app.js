@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const eventsContainer = document.getElementById('eventsContainer');
     const addEventButton = document.getElementById('addEventButton');
     const saveAsHtmlButton = document.getElementById('saveAsHtmlButton');
+    const fitButton = document.getElementById('fitButton');
     
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
@@ -71,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     //saveAsPdfButton.addEventListener('click', handleSaveAsPdf);
     //saveAsSvgButton.addEventListener('click', handleSaveAsSvg);
     saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
+    fitButton.addEventListener('click', () => {
+        if (cy) {
+            cy.animate({ fit: { eles: cy.elements(), padding: 40 } }, { duration: 400 });
+        }
+    });
 
 
     // --- Functions ---
@@ -334,94 +340,128 @@ document.addEventListener('DOMContentLoaded', () => {
             container: cyContainer,
             elements: elements,
             style: [
+                // --- Person nodes (default) ---
                 {
-                    selector: 'node',
+                    selector: 'node[!isFamilyNode]',
                     style: {
-                        'background-color': '#666',
-                        'label': 'data(name)', // This now points to our multi-line label
-                        'width': 100,      // Auto width
-                        'height': 50,     // Auto height
-                        'padding': 10,     // Increase padding slightly for multi-line
+                        'label': 'data(name)',
+                        'width': 120,
+                        'height': 60,
+                        'padding': '12px',
                         'shape': 'round-rectangle',
                         'text-valign': 'center',
                         'text-halign': 'center',
-                        'color': 'white',
-                        'font-size': '9px',   // Make font slightly smaller for more info
-                        'text-wrap': 'wrap',   // ESSENTIAL for multi-line labels
-                        'text-max-width': 100, // Max width before wrapping further
-                        'line-height': 1.2   // Adjust line spacing
+                        'color': '#fff',
+                        'font-size': '10px',
+                        'font-weight': 'bold',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '110px',
+                        'line-height': 1.3,
+                        'background-color': '#888',
+                        'border-width': 2,
+                        'border-color': '#666',
+                        'border-opacity': 0.8,
+                        'text-outline-width': 1,
+                        'text-outline-color': 'rgba(0,0,0,0.3)',
                     }
                 },
-                // ... (Keep other style rules: gender-specific colors, family nodes, edges, selected state) ...
-                { // Style for specific gender (example)
-                    selector: 'node[gender="female"]',
-                    style: {
-                        'background-color': '#ff69b4' // Pink
-                    }
-                },
+                // --- Male nodes ---
                 {
                     selector: 'node[gender="male"]',
                     style: {
-                        'background-color': '#4682B4' // Steel Blue - a darker shade of blue. 
-                                                      //or '#0066cc' // Another option - Royal Blue
+                        'background-color': '#3A7BD5',
+                        'border-color': '#2A5BA0',
+                        'shape': 'round-rectangle',
                     }
                 },
-                { // Style hidden family nodes
+                // --- Female nodes ---
+                {
+                    selector: 'node[gender="female"]',
+                    style: {
+                        'background-color': '#D5538A',
+                        'border-color': '#A03A6A',
+                        'shape': 'round-rectangle',
+                    }
+                },
+                // --- Family junction nodes (small, visible connector dot) ---
+                {
                     selector: 'node[?isFamilyNode]',
                     style: {
-                        'width': 5,
-                        'height': 5,
-                        'background-color': '#666',
-                        'label': ''
+                        'width': 12,
+                        'height': 12,
+                        'background-color': '#E8963A',
+                        'border-width': 2,
+                        'border-color': '#C07828',
+                        'shape': 'diamond',
+                        'label': '',
                     }
                 },
+                // --- Default edge style ---
                 {
                     selector: 'edge',
                     style: {
                         'width': 2,
-                        'line-color': '#666',
+                        'line-color': '#999',
                         'target-arrow-shape': 'none',
-                        'curve-style': 'bezier'
+                        'curve-style': 'taxi',       // Right-angle routing — much cleaner for trees
+                        'taxi-direction': 'downward',
+                        'taxi-turn': '50%',
                     }
                 },
+                // --- Partner (spouse) edges ---
                 {
                     selector: '.partner-edge',
                     style: {
-                        'line-color': '#FF69B4', // Pink color for spouse relationships
+                        'line-color': '#E8963A',
                         'line-style': 'solid',
-                        'width': 3
+                        'width': 2.5,
+                        'curve-style': 'straight',   // Straight horizontal line between spouses
                     }
                 },
+                // --- Parent → child edges ---
                 {
                     selector: '.child-edge',
                     style: {
-                        'line-color': '#666',
+                        'line-color': '#78909C',
+                        'width': 2,
                         'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#666',
-                        'arrow-scale': 0.8
+                        'target-arrow-color': '#78909C',
+                        'arrow-scale': 1.0,
                     }
                 },
+                // --- Selected node highlight ---
                 {
                     selector: ':selected',
                     style: {
-                        'border-width': 3,
-                        'border-color': '#f00'
+                        'border-width': 4,
+                        'border-color': '#FFD600',
+                        'background-blacken': -0.15,  // Slightly lighten to emphasize
                     }
-                }
+                },
+                // --- Hover effect for person nodes ---
+                {
+                    selector: 'node[!isFamilyNode]:active',
+                    style: {
+                        'overlay-color': '#FFD600',
+                        'overlay-opacity': 0.15,
+                    }
+                },
             ],
             layout: {
                 name: 'dagre',
                 rankDir: 'TB',
-                spacingFactor: 1.3,
-                rankSep: 100, // Increase vertical spacing between ranks
-                nodeSep: 50,  // Increase horizontal spacing between nodes
-                edgeSep: 50   // Increase spacing between edges
+                spacingFactor: 1.5,
+                rankSep: 120,  // Generous vertical gap between generations
+                nodeSep: 60,   // Horizontal gap between sibling nodes
+                edgeSep: 30,
+                ranker: 'tight-tree',  // Better ranking for family trees
             },
-            minZoom: 0.2,
-            maxZoom: 3,
-            wheelSensitivity: 0.2,  // Reduce this value to make zooming less sensitive (default is 1)
+            minZoom: 0.1,
+            maxZoom: 4,
+            wheelSensitivity: 0.3,
             zoomingEnabled: true,
-            userZoomingEnabled: true
+            userZoomingEnabled: true,
+            boxSelectionEnabled: false,  // Avoid accidental box select
         });
 
         // --- Cytoscape Event Handlers ---
@@ -432,8 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
             event.target.select(); // Select the tapped node
         });
 
-        // Optional: Pan and zoom controls
-        // cy.panzoom({});
+        // Auto-fit the graph into view after layout completes
+        cy.on('layoutstop', () => {
+            cy.fit(cy.elements(), 40);
+        });
     }
 
     function displayPersonDetails(personId) {
