@@ -1,1 +1,1 @@
-python Zupu_json2svg.py --input examples\example_zupu.json --output Ye_family.svg --surname 王
+python Zupu_json2svg.py --input examples\example_zupu.json --output Wang_family.svg --surname 王

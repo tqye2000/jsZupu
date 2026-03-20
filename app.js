@@ -14,6 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let cy; // Cytoscape instance
     let currentlyEditingPersonId = null;
     let currentFileName = null; // Track the currently loaded file name
+    let isDirty = false; // Track unsaved changes
+
+    // Warn user before leaving with unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 
     // --- DOM References ---
     const fileInput = document.getElementById('fileInput');
@@ -42,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const additionalNamesDiv = document.getElementById('additionalNames');
     const eventsContainer = document.getElementById('eventsContainer');
     const addEventButton = document.getElementById('addEventButton');
+    const saveAsHtmlButton = document.getElementById('saveAsHtmlButton');
     
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
@@ -64,6 +74,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Functions ---
+
+    /** Generate a unique ID with a given prefix, safe from millisecond collisions. */
+    let _idCounter = 0;
+    function generateId(prefix = 'id') {
+        _idCounter++;
+        return `${prefix}_${Date.now()}_${_idCounter}`;
+    }
+
+    /**
+     * Escape a string for safe insertion into HTML attribute values.
+     * Prevents XSS when interpolating user data into innerHTML.
+     */
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * Get the display name for a person, using their birth name (or first available name).
+     * @param {object} person - The person object from familyData.people
+     * @param {string} [order='surname-first'] - 'surname-first' for "Surname Given", 'given-first' for "Given Surname"
+     * @returns {string} The display name, or the person's id as fallback
+     */
+    function getDisplayName(person, order = 'surname-first') {
+        if (!person) return '';
+        if (!person.names || person.names.length === 0) return person.id;
+        const primaryName = person.names.find(n => n.type === 'birth') || person.names[0];
+        const given = primaryName.given || '';
+        const surname = primaryName.surname || '';
+        const name = order === 'given-first'
+            ? `${given} ${surname}`.trim()
+            : `${surname} ${given}`.trim();
+        return name || person.id;
+    }
+
+    /**
+     * Look up a person object by ID.
+     * @param {string} pid - The person ID
+     * @returns {object|undefined}
+     */
+    function findPerson(pid) {
+        return familyData.people.find(p => p.id === pid);
+    }
+
+    /**
+     * Build the family members table data array (used by PDF and HTML export).
+     * @returns {string[][]} Table rows including header row.
+     */
+    function buildFamilyTableData() {
+        const tableData = [
+            ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
+        ];
+
+        familyData.people.forEach(person => {
+            const displayName = getDisplayName(person);
+            const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
+            const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
+
+            const parents = (person.familiesAsChild || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.partners?.map(pid => getDisplayName(findPerson(pid))).join(', ');
+                }).filter(Boolean).join('; ') || '';
+
+            const spouses = (person.familiesAsSpouse || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.partners?.filter(pid => pid !== person.id)
+                        .map(pid => getDisplayName(findPerson(pid))).join(', ');
+                }).filter(Boolean).join('; ') || '';
+
+            const children = (person.familiesAsSpouse || [])
+                .map(famId => {
+                    const family = familyData.families.find(f => f.id === famId);
+                    return family?.children?.map(cid => getDisplayName(findPerson(cid))).join(', ');
+                }).filter(Boolean).join('; ') || '';
+
+            tableData.push([
+                person.id,
+                displayName,
+                person.gender || '',
+                birthEvent?.date?.value || '',
+                deathEvent?.date?.value || '',
+                parents,
+                spouses,
+                children
+            ]);
+        });
+
+        return tableData;
+    }
+
     function getPersonLifespan(personId, events) {
         if (!events || events.length === 0) {
             return ""; // No events data available
@@ -125,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     initializeCytoscape();
                     clearSearchResults();
                     hideEditForm();
+                    isDirty = false; // Fresh load, no unsaved changes
                 } else {
                     alert("Invalid JSON format. Missing 'people' or 'families' array.");
                 }
@@ -149,14 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Create Nodes (People)
         familyData.people.forEach(person => {
             // --- Build the Multi-line Label ---
-            let displayName = person.id; // Fallback
-            if (person.names && person.names.length > 0) {
-                 const birthName = person.names.find(n => n.type === 'birth') || person.names[0];
-                 const firstGiven = (birthName || person.names[0]).given || '';
-                 const firstSurname = (birthName || person.names[0]).surname || '';
-                 displayName = `${firstSurname} ${firstGiven}`.trim();
-            }
-             if (!displayName) displayName = person.id;
+            const displayName = getDisplayName(person);
     
             const gender = person.gender ? person.gender.charAt(0).toUpperCase() : ''; // e.g., M, F or empty
             const lifespan = getPersonLifespan(person.id, familyData.events); // Pass events array
@@ -398,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
      function handleAddPerson() {
-        const newId = `p_${Date.now()}`; // Simple unique ID generation
+        const newId = generateId('p');
         currentlyEditingPersonId = newId;
 
         personIdInput.value = newId;
@@ -510,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (selectedSpouseFamily === 'new') {
                 // Create new family
-                const familyId = `f_${Date.now()}`; // Simple unique ID generation
+                const familyId = generateId('f');
                 const spouseFamily = {
                     id: familyId,
                     partners: [person.id],
@@ -580,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         editStatus.textContent = 'Changes saved!';
         editStatus.style.color = 'green';
+        isDirty = true; // Mark as having unsaved changes
         detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`; // Update panel title
 
         // Optionally hide form after a short delay
@@ -603,8 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
             searchResultsDiv.textContent = 'No results found.';
         } else {
             results.forEach(person => {
-                const primaryName = person.names.find(n => n.type === 'birth') || person.names[0];
-                const displayName = `${primaryName.given || ''} ${primaryName.surname || ''}`.trim() || person.id;
+                const displayName = getDisplayName(person);
                 const span = document.createElement('span');
                 span.textContent = displayName;
                 span.classList.add('search-result-item');
@@ -676,6 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `File "${currentFileName}" saved successfully!` : 
                 'File saved successfully!';
             editStatus.style.color = 'green';
+            isDirty = false; // Clear dirty flag after successful save
 
         } catch (error) {
             alert(`Error saving file: ${error.message}`);
@@ -700,10 +802,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Create display text for family
             const partnerNames = partners.map(pid => {
-                const partner = familyData.people.find(p => p.id === pid);
-                if (!partner?.names?.length) return pid;
-                const name = partner.names[0];
-                return `${name.given || ''} ${name.surname || ''}`.trim() || pid;
+                const partner = findPerson(pid);
+                return getDisplayName(partner) || pid;
             }).join(' & ');
 
             const familyLabel = partnerNames ? `Family: ${partnerNames}` : `Family ${family.id}`;
@@ -744,9 +844,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <option value="nickname" ${nameData?.type === 'nickname' ? 'selected' : ''}>Nickname</option>
             </select><br>
             <label>Given Name:</label>
-            <input type="text" class="given-name" value="${nameData?.given || ''}"><br>
+            <input type="text" class="given-name" value="${escapeHtml(nameData?.given)}"><br>
             <label>Surname:</label>
-            <input type="text" class="surname" value="${nameData?.surname || ''}">
+            <input type="text" class="surname" value="${escapeHtml(nameData?.surname)}">
             <button type="button" class="remove-name-button">Remove</button>
         `;
 
@@ -762,11 +862,11 @@ document.addEventListener('DOMContentLoaded', () => {
         eventDiv.className = 'event-item';
         
         // Generate a unique event ID if this is a new event
-        const eventId = eventData?.id || `e_${Date.now()}`;
+        const eventId = eventData?.id || generateId('e');
         
         eventDiv.innerHTML = `
             <button type="button" class="remove-event-button">×</button>
-            <input type="hidden" class="event-id" value="${eventId}">
+            <input type="hidden" class="event-id" value="${escapeHtml(eventId)}">
             
             <label>Event Type:</label>
             <select class="event-type">
@@ -781,7 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <label>Date:</label>
             <input type="text" class="event-date" placeholder="YYYY-MM-DD or YYYY" 
-                   value="${eventData?.date?.value || ''}">
+                   value="${escapeHtml(eventData?.date?.value)}">
 
             <label>Date Qualifier:</label>
             <select class="event-date-qualifier">
@@ -793,7 +893,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <label>Place:</label>
             <input type="text" class="event-place" placeholder="Location of event"
-                   value="${eventData?.placeRef || ''}">
+                   value="${escapeHtml(eventData?.placeRef)}">
         `;
 
         eventDiv.querySelector('.remove-event-button').addEventListener('click', () => {
@@ -804,6 +904,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleNewTree() {
+        // Warn if there are unsaved changes
+        if (isDirty) {
+            if (!confirm('You have unsaved changes. Are you sure you want to create a new tree?')) {
+                return;
+            }
+        }
+
         // Reset family data to empty state
         familyData = {
             people: [],
@@ -836,113 +943,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show success message
         editStatus.textContent = 'New family tree created!';
         editStatus.style.color = 'green';
+        isDirty = false; // New tree starts clean
     }
 
-    // function handleSaveAsPdf() {
-
-    //     const pdf = new jsPDF('landscape');
-    
-    //     // --- Add custom Unicode font ---
-    //     // Replace 'notoSansBase64' with your actual Base64 string representation of the TTF file
-    //     pdf.addFileToVFS("NotoSansSC-Regular.ttf", NotoSansSC);
-    //     pdf.addFont("NotoSansSC-Regular.ttf", "NotoSansSC", "normal");
-    //     pdf.setFont("NotoSansSC");
-    
-    //     // Add title using the custom font
-    //     pdf.setFont("NotoSansSC", "bold");
-    //     pdf.setFontSize(20);
-    //     pdf.text("Family Tree", 20, 20);
-    
-    //     // Add date
-    //     pdf.setFont("NotoSansSC", "normal");
-    //     pdf.setFontSize(12);
-    //     pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    //     // Export Cytoscape graph as image
-    //     const pngDataUrl = cy.png({ full: true });
-    
-    //     // Add the graph image to the PDF
-    //     pdf.addImage(pngDataUrl, 'PNG', 20, 40, 250, 150);
-    
-    //     // Add a new page for detailed information
-    //     pdf.addPage();
-    
-    //     // Prepare family members table data
-    //     const tableData = [
-    //         ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
-    //     ];
-    
-    //     familyData.people.forEach(person => {
-    //         const primaryName = person.names?.[0] || {};
-    //         const displayName = `${primaryName.given || ''} ${primaryName.surname || ''}`.trim();
-    //         const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
-    //         const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
-    
-    //         // Get parents
-    //         const parentFamily = person.familiesAsChild?.[0] ? 
-    //             familyData.families.find(f => f.id === person.familiesAsChild[0]) : null;
-    //         const parents = parentFamily?.partners?.map(pid => {
-    //             const parent = familyData.people.find(p => p.id === pid);
-    //             const parentName = parent?.names?.[0];
-    //             return parentName ? `${parentName.given || ''} ${parentName.surname || ''}`.trim() : pid;
-    //         }).join(', ') || '';
-    
-    //         // Get spouses
-    //         const spouseFamilies = person.familiesAsSpouse?.map(famId => {
-    //             const family = familyData.families.find(f => f.id === famId);
-    //             return family?.partners?.filter(pid => pid !== person.id).map(pid => {
-    //                 const spouse = familyData.people.find(p => p.id === pid);
-    //                 const spouseName = spouse?.names?.[0];
-    //                 return spouseName ? `${spouseName.given || ''} ${spouseName.surname || ''}`.trim() : pid;
-    //             }).join(', ');
-    //         }).filter(Boolean).join('; ') || '';
-    
-    //         // Get children
-    //         const children = person.familiesAsSpouse?.map(famId => {
-    //             const family = familyData.families.find(f => f.id === famId);
-    //             return family?.children?.map(cid => {
-    //                 const child = familyData.people.find(p => p.id === cid);
-    //                 const childName = child?.names?.[0];
-    //                 return childName ? `${childName.given || ''} ${childName.surname || ''}`.trim() : cid;
-    //             }).join(', ');
-    //         }).filter(Boolean).join('; ') || '';
-    
-    //         tableData.push([
-    //             person.id,
-    //             displayName,
-    //             person.gender || '',
-    //             birthEvent?.date?.value || '',
-    //             deathEvent?.date?.value || '',
-    //             parents,
-    //             spouseFamilies,
-    //             children
-    //         ]);
-    //     });
-    
-    //     // Use autoTable plugin to create the table
-    //     pdf.autoTable({
-    //         startY: 20,
-    //         head: [tableData[0]],
-    //         body: tableData.slice(1),
-    //         theme: 'grid',
-    //         styles: { fontSize: 8, font: "NotoSansSC" },
-    //         columnStyles: {
-    //             0: { cellWidth: 30 },
-    //             1: { cellWidth: 50 },
-    //             2: { cellWidth: 20 },
-    //             3: { cellWidth: 30 },
-    //             4: { cellWidth: 30 },
-    //             5: { cellWidth: 50 },
-    //             6: { cellWidth: 50 },
-    //             7: { cellWidth: 50 }
-    //         }
-    //     });
-    
-    //     // Save the PDF
-    //     pdf.save('family_tree.pdf');
-    // }
-    
     function handleSaveAsPdf() {
+        if (!cy || (familyData.people.length === 0 && familyData.families.length === 0)) {
+            alert("No data to export.");
+            return;
+        }
+
         // Create a new PDF document
         const pdf = new jsPDF('landscape');
         
@@ -967,57 +976,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add a new page for detailed information
         pdf.addPage();
         
-        // Add family members table with relationships
-        const tableData = [
-            ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
-        ];
-        
-        familyData.people.forEach(person => {
-            const primaryName = person.names?.[0] || {};
-            const displayName = `${primaryName.given || ''} ${primaryName.surname || ''}`.trim();
-            const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
-            const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
-            
-            // Get parents
-            const parentFamily = person.familiesAsChild?.[0] ? 
-                familyData.families.find(f => f.id === person.familiesAsChild[0]) : null;
-            const parents = parentFamily?.partners?.map(pid => {
-                const parent = familyData.people.find(p => p.id === pid);
-                const parentName = parent?.names?.[0];
-                return parentName ? `${parentName.given || ''} ${parentName.surname || ''}`.trim() : pid;
-            }).join(', ') || '';
-            
-            // Get spouses
-            const spouseFamilies = person.familiesAsSpouse?.map(famId => {
-                const family = familyData.families.find(f => f.id === famId);
-                return family?.partners?.filter(pid => pid !== person.id).map(pid => {
-                    const spouse = familyData.people.find(p => p.id === pid);
-                    const spouseName = spouse?.names?.[0];
-                    return spouseName ? `${spouseName.given || ''} ${spouseName.surname || ''}`.trim() : pid;
-                }).join(', ');
-            }).filter(Boolean).join('; ') || '';
-            
-            // Get children
-            const children = person.familiesAsSpouse?.map(famId => {
-                const family = familyData.families.find(f => f.id === famId);
-                return family?.children?.map(cid => {
-                    const child = familyData.people.find(p => p.id === cid);
-                    const childName = child?.names?.[0];
-                    return childName ? `${childName.given || ''} ${childName.surname || ''}`.trim() : cid;
-                }).join(', ');
-            }).filter(Boolean).join('; ') || '';
-            
-            tableData.push([
-                person.id,
-                displayName,
-                person.gender || '',
-                birthEvent?.date?.value || '',
-                deathEvent?.date?.value || '',
-                parents,
-                spouseFamilies,
-                children
-            ]);
-        });
+        // Build family members table using shared helper
+        const tableData = buildFamilyTableData();
         
         pdf.autoTable({
             startY: 20,
@@ -1031,9 +991,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 2: { cellWidth: 15 },  // Gender
                 3: { cellWidth: 30 },  // Birth
                 4: { cellWidth: 30 },  // Death
-                5: { cellWidth: 50, cellWidth: 'wrap' },  // Parents
+                5: { cellWidth: 'wrap' },  // Parents
                 6: { cellWidth: 50 },  // Spouses
-                7: { cellWidth: 50, cellWidth: 'wrap' }   // Children
+                7: { cellWidth: 'wrap' }   // Children
             },
             tableWidth: 'wrap', // Ensure the table fits within the page
         });
@@ -1084,58 +1044,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Generate SVG content
         const svgContent = cy.svg({ scale: 1 });
     
-        // Generate table content
-        const tableData = [
-            ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
-        ];
-    
-        familyData.people.forEach(person => {
-            const primaryName = person.names?.[0] || {};
-            const displayName = `${primaryName.surname || ''} ${primaryName.given || ''}`.trim();
-            const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
-            const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
-    
-            const parents = (person.familiesAsChild || [])
-                .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
-                    return family?.partners?.map(pid => {
-                        const parent = familyData.people.find(p => p.id === pid);
-                        const parentName = parent?.names?.[0];
-                        return parentName ? `${parentName.surname || ''} ${parentName.given || ''}`.trim() : pid;
-                    }).join(', ');
-                }).join('; ') || '';
-    
-            const spouses = (person.familiesAsSpouse || [])
-                .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
-                    return family?.partners?.filter(pid => pid !== person.id).map(pid => {
-                        const spouse = familyData.people.find(p => p.id === pid);
-                        const spouseName = spouse?.names?.[0];
-                        return spouseName ? `${spouseName.surname || ''} ${spouseName.given || ''}`.trim() : pid;
-                    }).join(', ');
-                }).join('; ') || '';
-    
-            const children = (person.familiesAsSpouse || [])
-                .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
-                    return family?.children?.map(cid => {
-                        const child = familyData.people.find(p => p.id === cid);
-                        const childName = child?.names?.[0];
-                        return childName ? `${childName.surname || ''} ${childName.given || ''}`.trim() : cid;
-                    }).join(', ');
-                }).join('; ') || '';
-    
-            tableData.push([
-                person.id,
-                displayName,
-                person.gender || '',
-                birthEvent?.date?.value || '',
-                deathEvent?.date?.value || '',
-                parents,
-                spouses,
-                children
-            ]);
-        });
+        // Build table using shared helper
+        const tableData = buildFamilyTableData();
     
         // Create HTML content
         const htmlContent = `
@@ -1178,24 +1088,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </html>
         `;
     
-        // // Create a Blob and trigger download
-        // const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-        // const url = URL.createObjectURL(blob);
-
-        // // Open the HTML file in a new tab
-        // window.open(url, '_blank');
-
-        // // Create a download link
-        // const downloadLink = document.createElement('a');
-        // downloadLink.href = url;
-        // downloadLink.download = 'FamilyTree.html';
-        // document.body.appendChild(downloadLink);
-        // downloadLink.click();
-        // document.body.removeChild(downloadLink);
-
-        // // Clean up the URL object
-        // URL.revokeObjectURL(url);
-
         // Open the HTML content in a new browser window
         const newWindow = window.open('', '_blank');
         newWindow.document.open();
