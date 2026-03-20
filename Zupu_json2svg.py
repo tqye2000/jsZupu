@@ -190,6 +190,20 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
     subtree_w: Dict[str, float] = {}
     width_visiting = set()
 
+    def _child_slot_min_width(child_id: str, parent_fid: str) -> float:
+        """Minimum width a child slot needs: accounts for the child's own
+        spouse-pair width even when the child has no descendant family or
+        the descendant family is narrower than the couple width."""
+        # Width of just the couple in the child's own spouse family
+        couple_w = NODE_W  # at least the child node itself
+        for sfid in spouse_fams_of.get(child_id, []):
+            if sfid == parent_fid or sfid not in included_families:
+                continue
+            sp = [p for p in families[sfid].get("partners", []) if p in included_people]
+            pw = len(sp) * NODE_W + max(0, len(sp) - 1) * PARTNER_GAP
+            couple_w = max(couple_w, pw)
+        return couple_w
+
     def family_width(fid: str) -> float:
         if fid in subtree_w:
             return subtree_w[fid]
@@ -207,10 +221,12 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         slot_widths = []
         for c in children:
             df = primary_desc_fam.get(c)
+            # minimum width this child needs (couple pair width)
+            min_w = _child_slot_min_width(c, fid)
             if df and df != fid and df in included_families:
-                sw = max(NODE_W, family_width(df))
+                sw = max(min_w, family_width(df))
             else:
-                sw = NODE_W
+                sw = min_w
             slot_widths.append(sw)
 
         cw_total = sum(slot_widths) + max(0, len(slot_widths) - 1) * CHILD_GAP
@@ -280,10 +296,11 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         child_slots = []
         for c in children:
             df = primary_desc_fam.get(c)
+            min_w = _child_slot_min_width(c, fid)
             if df and df != fid and df in included_families:
-                sw = max(NODE_W, subtree_w[df])
+                sw = max(min_w, subtree_w[df])
             else:
-                sw = NODE_W
+                sw = min_w
             child_slots.append((c, df, sw))
 
         cw_total = sum(sw for _, _, sw in child_slots) + max(0, len(child_slots) - 1) * CHILD_GAP
@@ -307,6 +324,16 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
                 target_x = dpx + idx * (NODE_W + PARTNER_GAP)
 
                 desc_x0 = child_x - target_x
+
+                # Clamp so the descendant subtree stays within the
+                # allocated slot [cx .. cx + sw]
+                slot_left = cx
+                slot_right = cx + sw
+                if desc_x0 < slot_left:
+                    desc_x0 = slot_left
+                if desc_x0 + dtotal > slot_right:
+                    desc_x0 = slot_right - dtotal
+
                 desc_y0 = cy
                 place_family(df, desc_x0, desc_y0, guard)
 
