@@ -187,7 +187,7 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
     # -------------------------
     # 5) Recursive width for strict nuclear blocks
     # -------------------------
-    NODE_W, NODE_H = 44, 120      # narrow, tall (vertical text)
+    NODE_W, NODE_H = 44, 100      # narrow, tall (vertical text)
     PARTNER_GAP = 12
     CHILD_GAP = 24
     BLOCK_GAP = 34
