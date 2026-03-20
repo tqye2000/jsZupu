@@ -43,9 +43,31 @@ def esc(text: str) -> str:
     )
 
 
+def _extract_year(date_val: str) -> str:
+    """Return the 4-digit year from a date string like '1905', '1905-10-16', or '1905/10/16'."""
+    if not date_val:
+        return ""
+    return date_val.replace("/", "-").split("-")[0]
+
+
 def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
     people: Dict[str, dict] = {p["id"]: p for p in data.get("people", [])}
     families: Dict[str, dict] = {f["id"]: f for f in data.get("families", [])}
+
+    # Build birth/death year lookup from events
+    events = data.get("events", [])
+    birth_year: Dict[str, str] = {}
+    death_year: Dict[str, str] = {}
+    for ev in events:
+        pref = ev.get("personRef", "")
+        date_str = (ev.get("date") or {}).get("value", "")
+        yr = _extract_year(date_str)
+        if not yr or not pref:
+            continue
+        if ev.get("type") == "birth":
+            birth_year[pref] = yr
+        elif ev.get("type") == "death":
+            death_year[pref] = yr
 
     # -------------------------
     # 1) Find root ancestors
@@ -456,11 +478,28 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         chars = list(txt)
         top = y + 13
         line_h = 11.0
-        max_lines = int((NODE_H - 10) / line_h)
+
+        # Reserve space at the bottom for birth/death years if available
+        by = birth_year.get(pid, "")
+        dy = death_year.get(pid, "")
+        year_lines = (1 if by else 0) + (1 if dy else 0)
+        year_block_h = year_lines * 9  # ~9px per year line
+        available_h = NODE_H - 10 - year_block_h
+        max_lines = int(available_h / line_h)
 
         for i, ch in enumerate(chars[:max_lines]):
             svg.append(f'<text x="{x + NODE_W/2}" y="{top + i*line_h}" '
                        f'text-anchor="middle" font-size="10.5" fill="#111">{esc(ch)}</text>')
+
+        # Birth/death years at the bottom of the box
+        year_y = y + NODE_H - 4 - (year_lines - 1) * 9
+        if by:
+            svg.append(f'<text x="{x + NODE_W/2}" y="{year_y}" '
+                       f'text-anchor="middle" font-size="7.5" fill="#888">b.{esc(by)}</text>')
+            year_y += 9
+        if dy:
+            svg.append(f'<text x="{x + NODE_W/2}" y="{year_y}" '
+                       f'text-anchor="middle" font-size="7.5" fill="#888">d.{esc(dy)}</text>')
 
         svg.append(f'<text x="{x + NODE_W - 3}" y="{y + 10}" text-anchor="end" '
                    f'font-size="8.5" fill="#666">G{gen.get(pid, 0)+1}</text>')
