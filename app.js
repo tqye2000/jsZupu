@@ -657,36 +657,61 @@ document.addEventListener('DOMContentLoaded', () => {
         clearSearchResults();
         if (!searchTerm) return;
 
-        const results = familyData.people.filter(person => {
-            return person.names.some(name =>
+        // Build results: each entry is { person, matchHint }
+        const results = [];
+        for (const person of familyData.people) {
+            // Match by name
+            const nameMatch = person.names.some(name =>
                 (name.given?.toLowerCase().includes(searchTerm) ||
                  name.surname?.toLowerCase().includes(searchTerm))
             );
-        });
+            if (nameMatch) {
+                results.push({ person, matchHint: '' });
+                continue;
+            }
+
+            // Match by event date or place
+            const personEvents = eventsByPerson.get(person.id) || [];
+            let matchHint = '';
+            for (const ev of personEvents) {
+                const dateVal = (ev.date?.value || '').toLowerCase();
+                const placeVal = (ev.placeRef || '').toLowerCase();
+                if (dateVal.includes(searchTerm)) {
+                    matchHint = `${ev.type}: ${ev.date.value}`;
+                    break;
+                }
+                if (placeVal.includes(searchTerm)) {
+                    matchHint = `${ev.type}: ${ev.placeRef}`;
+                    break;
+                }
+            }
+            if (matchHint) {
+                results.push({ person, matchHint });
+            }
+        }
 
         if (results.length === 0) {
             searchResultsDiv.textContent = 'No results found.';
         } else {
-            results.forEach(person => {
+            results.forEach(({ person, matchHint }) => {
                 const displayName = getDisplayName(person);
                 const span = document.createElement('span');
-                span.textContent = displayName;
+                span.textContent = matchHint ? `${displayName} (${matchHint})` : displayName;
                 span.classList.add('search-result-item');
-                span.dataset.id = person.id; // Store ID for click handling
+                span.dataset.id = person.id;
                 span.title = `Click to view details for ${displayName} (${person.id})`;
                 span.addEventListener('click', () => {
                     displayPersonDetails(person.id);
-                     // Highlight and maybe zoom in Cytoscape
-                     if (cy) {
-                         cy.$(':selected').unselect(); // Unselect others
-                         const node = cy.getElementById(person.id);
-                         if(node) {
-                             node.select();
-                             cy.animate({
-                                 center: { eles: node },
-                                 zoom: 1.5 // Zoom level
+                    if (cy) {
+                        cy.$(':selected').unselect();
+                        const node = cy.getElementById(person.id);
+                        if (node) {
+                            node.select();
+                            cy.animate({
+                                center: { eles: node },
+                                zoom: 1.5
                             }, { duration: 500 });
-                         }
+                        }
                     }
                 });
                 searchResultsDiv.appendChild(span);

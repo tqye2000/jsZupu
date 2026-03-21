@@ -8,7 +8,7 @@ window.Zupu.i18n = (function () {
         zh: {
             title: '简易族谱', heading: '简易族谱',
             loadLabel: '加载族谱:', newTree: '新建',
-            searchPlaceholder: '姓名查询...', search: '查询',
+            searchPlaceholder: '查询姓名、日期或地点...', search: '查询',
             save: '下载保存', addPerson: '添加新成员', print: '打印',
             svgTree: 'SVG族谱图', svgTreeTip: '生成严格核心家庭SVG族谱图',
             undo: '↩ 撤销', undoTip: '撤销 (Ctrl+Z)',
