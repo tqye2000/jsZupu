@@ -199,6 +199,62 @@ document.addEventListener('DOMContentLoaded', () => {
         editStatus.style.color = 'green';
     }
 
+    /** Return an array of IDs that appear more than once in a list of {id} objects. */
+    function findDuplicateIds(arr) {
+        const seen = new Set();
+        const dups = new Set();
+        for (const item of arr) {
+            if (seen.has(item.id)) dups.add(item.id);
+            else seen.add(item.id);
+        }
+        return [...dups];
+    }
+
+    /**
+     * Strip dangling references from familyData in-place.
+     * Returns the number of individual refs removed.
+     */
+    function repairDanglingRefs(data) {
+        const personIds = new Set(data.people.map(p => p.id));
+        const familyIds = new Set(data.families.map(f => f.id));
+        let removed = 0;
+
+        // Person refs: familiesAsChild / familiesAsSpouse must point to existing families
+        for (const p of data.people) {
+            if (p.familiesAsChild) {
+                const before = p.familiesAsChild.length;
+                p.familiesAsChild = p.familiesAsChild.filter(fid => familyIds.has(fid));
+                removed += before - p.familiesAsChild.length;
+            }
+            if (p.familiesAsSpouse) {
+                const before = p.familiesAsSpouse.length;
+                p.familiesAsSpouse = p.familiesAsSpouse.filter(fid => familyIds.has(fid));
+                removed += before - p.familiesAsSpouse.length;
+            }
+        }
+
+        // Family refs: partners / children must point to existing people
+        for (const f of data.families) {
+            if (f.partners) {
+                const before = f.partners.length;
+                f.partners = f.partners.filter(pid => personIds.has(pid));
+                removed += before - f.partners.length;
+            }
+            if (f.children) {
+                const before = f.children.length;
+                f.children = f.children.filter(pid => personIds.has(pid));
+                removed += before - f.children.length;
+            }
+        }
+
+        // Event refs: personRef must point to an existing person
+        const beforeEvents = data.events.length;
+        data.events = data.events.filter(ev => !ev.personRef || personIds.has(ev.personRef));
+        removed += beforeEvents - data.events.length;
+
+        return removed;
+    }
+
     /**
      * Build the family members table data array (used by PDF and HTML export).
      * @returns {string[][]} Table rows including header row.
@@ -254,6 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = event.target.files[0];
         if (!file) return;
 
+        // --- #7  File size guard (5 MB) ---
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        if (file.size > MAX_FILE_SIZE) {
+            alert(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed is 5 MB.`);
+            fileInput.value = '';
+            return;
+        }
+
         currentFileName = file.name; // Store the loaded file name
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -268,6 +332,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     familyData.sources = familyData.sources || [];
                     familyData.notes = familyData.notes || [];
                     familyData.meta = familyData.meta || {};
+
+                    // --- #6  Duplicate ID detection ---
+                    const warnings = [];
+                    const dupPeople = findDuplicateIds(familyData.people);
+                    const dupFamilies = findDuplicateIds(familyData.families);
+                    if (dupPeople.length > 0) {
+                        warnings.push(`Duplicate person IDs: ${dupPeople.join(', ')}`);
+                    }
+                    if (dupFamilies.length > 0) {
+                        warnings.push(`Duplicate family IDs: ${dupFamilies.join(', ')}`);
+                    }
+
+                    // --- #5  Referential integrity ---
+                    const integrityIssues = repairDanglingRefs(familyData);
+                    if (integrityIssues > 0) {
+                        warnings.push(`Removed ${integrityIssues} dangling reference(s)`);
+                    }
+
+                    if (warnings.length > 0) {
+                        console.warn('Data issues found on load:', warnings);
+                        alert('Data loaded with warnings:\n• ' + warnings.join('\n• '));
+                    }
+
                     console.log("Family data loaded:", familyData);
                     rebuildIndexes();
                     initializeCytoscape();
