@@ -52,6 +52,15 @@ h1, h2 {
     background-color: #455A64;
 }
 
+#undoButton {
+    background-color: #607D8B;
+    font-size: 13px;
+}
+
+#undoButton:hover {
+    background-color: #455A64;
+}
+
 #searchResults {
     margin-bottom: 1em;
     padding: 0.5em;

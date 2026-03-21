@@ -7,8 +7,52 @@
 //----------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize jsPDF
-    window.jsPDF = window.jspdf.jsPDF;
+
+    // --- i18n ---
+    const I18N = {
+        zh: {
+            title: '简易族谱', heading: '简易族谱',
+            loadLabel: '加载族谱:', newTree: '新建',
+            searchPlaceholder: '姓名查询...', search: '查询',
+            save: '下载保存', addPerson: '添加新成员', print: '打印',
+            svgTree: 'SVG族谱图', svgTreeTip: '生成严格核心家庭SVG族谱图',
+            undo: '↩ 撤销', undoTip: '撤销 (Ctrl+Z)',
+            fit: '⛶ 适应', fitTip: '适应屏幕',
+            detailsEdit: '详情 / 编辑',
+            selectPrompt: '(从关系图上或搜索结果中选择一人)',
+            nameTypeLabel: '获取方式:', nameBirth: '出生', nameMarried: '结婚',
+            nameAdopted: '领养', nameNickname: '其他',
+            givenName: '名字:', surname: '姓:',
+            addName: '添加其他名字',
+            genderLabel: '性别:', genderSelect: '选择...',
+            genderMale: '男', genderFemale: '女', genderOther: '其他',
+            eventsHeading: '事件', addEvent: '添加事件',
+            parentFamily: '父母家庭:', spouseFamily: '配偶家庭:',
+            saveChanges: '保存', cancel: '取消',
+        }
+    };
+
+    // Detect language: window.ZUPU_LANG (set by index_zw.html), ?lang= param, or <html lang>
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    const lang = window.ZUPU_LANG || urlLang || document.documentElement.lang || 'en';
+    const t = I18N[lang] || {};
+
+    // Apply translations to data-i18n elements
+    if (Object.keys(t).length > 0) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (t[key]) el.textContent = t[key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (t[key]) el.placeholder = t[key];
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            if (t[key]) el.title = t[key];
+        });
+        if (t.title) document.title = t.title;
+    }
         
     // --- Globals ---
     let familyData = { people: [], families: [], events: [], places: [], sources: [], notes: [], meta: {} };
@@ -16,6 +60,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentlyEditingPersonId = null;
     let currentFileName = null; // Track the currently loaded file name
     let isDirty = false; // Track unsaved changes
+
+    // --- Indexes (rebuilt after data load/mutation) ---
+    let peopleById = new Map();   // pid -> person object
+    let familiesById = new Map(); // fid -> family object
+    let eventsByPerson = new Map(); // pid -> [event, ...]
+
+    function rebuildIndexes() {
+        peopleById = new Map(familyData.people.map(p => [p.id, p]));
+        familiesById = new Map(familyData.families.map(f => [f.id, f]));
+        eventsByPerson = new Map();
+        for (const ev of familyData.events) {
+            if (!ev.personRef) continue;
+            if (!eventsByPerson.has(ev.personRef)) eventsByPerson.set(ev.personRef, []);
+            eventsByPerson.get(ev.personRef).push(ev);
+        }
+    }
+
+    // --- Undo stack ---
+    const undoStack = [];
+    const MAX_UNDO = 50;
+
+    function pushUndo() {
+        undoStack.push(JSON.stringify(familyData));
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+    }
+
+    function performUndo() {
+        if (undoStack.length === 0) return;
+        const snapshot = undoStack.pop();
+        familyData = JSON.parse(snapshot);
+        rebuildIndexes();
+        initializeCytoscape();
+        hideEditForm();
+        clearSearchResults();
+        isDirty = true;
+    }
 
     // Warn user before leaving with unsaved changes
     window.addEventListener('beforeunload', (e) => {
@@ -32,8 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('saveButton');
     const addPersonButton = document.getElementById('addPersonButton');
     const newButton = document.getElementById('newButton');
-    // const saveAsPdfButton = document.getElementById('saveAsPdfButton');
-    // const saveAsSvgButton = document.getElementById('saveAsSvgButton');
+    const undoButton = document.getElementById('undoButton');
     const searchResultsDiv = document.getElementById('searchResults');
     const cyContainer = document.getElementById('cy');
     const detailsPanel = document.getElementById('detailsPanel');
@@ -71,13 +150,23 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
     addEventButton.addEventListener('click', () => addEventField());
-    //saveAsPdfButton.addEventListener('click', handleSaveAsPdf);
-    //saveAsSvgButton.addEventListener('click', handleSaveAsSvg);
     saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
     if (saveAsSvgTreeButton) saveAsSvgTreeButton.addEventListener('click', handleSaveAsSvgTree);
+    if (undoButton) undoButton.addEventListener('click', performUndo);
     fitButton.addEventListener('click', () => {
         if (cy) {
             cy.animate({ fit: { eles: cy.elements(), padding: 40 } }, { duration: 400 });
+        }
+    });
+
+    // Keyboard shortcut: Ctrl+Z for undo
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            // Don't intercept if user is typing in an input/select
+            const tag = document.activeElement?.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            e.preventDefault();
+            performUndo();
         }
     });
 
@@ -129,7 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {object|undefined}
      */
     function findPerson(pid) {
-        return familyData.people.find(p => p.id === pid);
+        return peopleById.get(pid);
+    }
+
+    function findFamily(fid) {
+        return familiesById.get(fid);
     }
 
     /**
@@ -143,25 +236,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         familyData.people.forEach(person => {
             const displayName = getDisplayName(person);
-            const birthEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'birth');
-            const deathEvent = familyData.events.find(e => e.personRef === person.id && e.type === 'death');
+            const personEvts = eventsByPerson.get(person.id) || [];
+            const birthEvent = personEvts.find(e => e.type === 'birth');
+            const deathEvent = personEvts.find(e => e.type === 'death');
 
             const parents = (person.familiesAsChild || [])
                 .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
+                    const family = findFamily(famId);
                     return family?.partners?.map(pid => getDisplayName(findPerson(pid))).join(', ');
                 }).filter(Boolean).join('; ') || '';
 
             const spouses = (person.familiesAsSpouse || [])
                 .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
+                    const family = findFamily(famId);
                     return family?.partners?.filter(pid => pid !== person.id)
                         .map(pid => getDisplayName(findPerson(pid))).join(', ');
                 }).filter(Boolean).join('; ') || '';
 
             const children = (person.familiesAsSpouse || [])
                 .map(famId => {
-                    const family = familyData.families.find(f => f.id === famId);
+                    const family = findFamily(famId);
                     return family?.children?.map(cid => getDisplayName(findPerson(cid))).join(', ');
                 }).filter(Boolean).join('; ') || '';
 
@@ -180,16 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return tableData;
     }
 
-    function getPersonLifespan(personId, events) {
-        if (!events || events.length === 0) {
-            return ""; // No events data available
-        }
-    
+    function getPersonLifespan(personId) {
+        const personEvents = eventsByPerson.get(personId) || [];
+        if (personEvents.length === 0) return '';
+
         let birthYear = null;
         let deathYear = null;
-    
-        // Find birth and death events specifically for this person
-        const personEvents = events.filter(e => e.personRef === personId);
     
         const birthEvent = personEvents.find(e => e.type === 'birth' && e.date?.value);
         const deathEvent = personEvents.find(e => e.type === 'death' && e.date?.value);
@@ -238,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     familyData.notes = familyData.notes || [];
                     familyData.meta = familyData.meta || {};
                     console.log("Family data loaded:", familyData);
+                    rebuildIndexes();
                     initializeCytoscape();
                     clearSearchResults();
                     hideEditForm();
@@ -269,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const displayName = getDisplayName(person);
     
             const gender = person.gender ? person.gender.charAt(0).toUpperCase() : ''; // e.g., M, F or empty
-            const lifespan = getPersonLifespan(person.id, familyData.events); // Pass events array
+            const lifespan = getPersonLifespan(person.id);
     
             // Combine info with newlines (\n)
             let fullLabel = displayName;
@@ -482,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayPersonDetails(personId) {
-        const person = familyData.people.find(p => p.id === personId);
+        const person = findPerson(personId);
         if (!person) {
             hideEditForm();
             return;
@@ -518,6 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update family selectors
         updateFamilySelectors(person);
         
+        saveChangesButton.textContent = 'Save Changes';
         detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personSurnameInput.value} ${personGivenNameInput.value}`;
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
@@ -577,6 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!personId) return;
 
+        // Snapshot for undo before any mutation
+        pushUndo();
+
         // Collect all names
         const names = [{
             type: nameTypeSelect.value,
@@ -601,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let person = familyData.people.find(p => p.id === personId);
+        let person = findPerson(personId);
         let isNewPerson = false;
 
         if (!person) {
@@ -628,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update parent family relationship
         if (selectedParentFamily) {
-            const parentFamily = familyData.families.find(f => f.id === selectedParentFamily);
+            const parentFamily = findFamily(selectedParentFamily);
             if (parentFamily) {
                 // Remove person from any existing parent families
                 familyData.families.forEach(f => {
@@ -667,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 familyData.families.push(spouseFamily);
                 person.familiesAsSpouse = [familyId];
             } else {
-                const spouseFamily = familyData.families.find(f => f.id === selectedSpouseFamily);
+                const spouseFamily = findFamily(selectedSpouseFamily);
                 if (spouseFamily) {
                     spouseFamily.partners = spouseFamily.partners || [];
                     if (!spouseFamily.partners.includes(person.id)) {
@@ -708,6 +803,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 familyData.events.push(event);
             }
         });
+
+        // Rebuild indexes after mutation
+        rebuildIndexes();
 
         // Update Cytoscape graph
         if (cy) {
@@ -999,6 +1097,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.value = '';
         currentFileName = null;
 
+        rebuildIndexes();
+
         // Clear search results
         clearSearchResults();
 
@@ -1012,90 +1112,6 @@ document.addEventListener('DOMContentLoaded', () => {
         editStatus.textContent = 'New family tree created!';
         editStatus.style.color = 'green';
         isDirty = false; // New tree starts clean
-    }
-
-    function handleSaveAsPdf() {
-        if (!cy || (familyData.people.length === 0 && familyData.families.length === 0)) {
-            alert("No data to export.");
-            return;
-        }
-
-        // Create a new PDF document
-        const pdf = new jsPDF('landscape');
-        
-        console.log("Font List:", pdf.getFontList());
-
-        // Add title
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(20);
-        pdf.text("Family Tree", 20, 20);
-        
-        // Add date
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(12);
-        pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
-        
-        // Export Cytoscape graph as image
-        const pngDataUrl = cy.png({ full: true });
-        
-        // Add the graph image to the PDF
-        pdf.addImage(pngDataUrl, 'PNG', 20, 40, 250, 150);
-        
-        // Add a new page for detailed information
-        pdf.addPage();
-        
-        // Build family members table using shared helper
-        const tableData = buildFamilyTableData();
-        
-        pdf.autoTable({
-            startY: 20,
-            head: [tableData[0]],
-            body: tableData.slice(1),
-            theme: 'grid',
-            styles: { fontSize: 8, cellPadding: 2, font: "times" },
-            columnStyles: {
-                0: { cellWidth: 30 },  // ID
-                1: { cellWidth: 40 },  // Name
-                2: { cellWidth: 15 },  // Gender
-                3: { cellWidth: 30 },  // Birth
-                4: { cellWidth: 30 },  // Death
-                5: { cellWidth: 'wrap' },  // Parents
-                6: { cellWidth: 50 },  // Spouses
-                7: { cellWidth: 'wrap' }   // Children
-            },
-            tableWidth: 'wrap', // Ensure the table fits within the page
-        });
-        
-        // Save the PDF
-        pdf.save('family_tree.pdf');
-    }
-
-    function handleSaveAsSvg() {
-
-        if (familyData.people.length === 0 && familyData.families.length === 0) {
-            alert("No data to export.");
-            return;
-        }
-
-        // Generate an SVG string for the entire graph
-        // The options (e.g., scale) can be adjusted as needed.
-        const svgContent = cy.svg({ scale: 1 });
-        
-        // Create a Blob from the SVG content
-        const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
-        
-        
-        // Create an object URL and trigger a download
-        const url = URL.createObjectURL(blob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = 'FamilyTree.svg';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        
-        // Clean up
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url);
     }
 
     function handleSaveAsHtml() {
@@ -1141,13 +1157,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <table>
             <thead>
                 <tr>
-                    ${tableData[0].map(header => `<th>${header}</th>`).join('')}
+                    ${tableData[0].map(header => `<th>${escapeHtml(header)}</th>`).join('')}
                 </tr>
             </thead>
             <tbody>
                 ${tableData.slice(1).map(row => `
                     <tr>
-                        ${row.map(cell => `<td>${cell}</td>`).join('')}
+                        ${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}
                     </tr>
                 `).join('')}
             </tbody>

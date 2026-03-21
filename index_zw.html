@@ -1,100 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client-Side Family Tree</title>
+    <title data-i18n="title">简易族谱</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Cytoscape.js library -->
-    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
-    <!-- Optional: Layout extension (dagre) for better tree layout -->
-    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
-    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
-    <!-- PDF Export library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <!-- SVG Export library -->
-    <script src="https://unpkg.com/cytoscape-svg@0.2.0/cytoscape-svg.js"></script>
+    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js" integrity="sha384-Q20qNhd/ak9c9XLRBwy3jG/XxBWAdfQNYkZ0bYCKxx/9iI9bUVYvLzOf7lviiPKW" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js" integrity="sha384-2IH3T69EIKYC4c+RXZifZRvaH5SRUdacJW7j6HtE5rQbvLhKKdawxq6vpIzJ7j9M" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js" integrity="sha384-u69h9ebXeSjlg6q/rb1zKTRAGu/h8deCl0409xpS/QJctMKnc4M9Fzkm01VOQdeF" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/cytoscape-svg@0.2.0/cytoscape-svg.js" integrity="sha384-NcK+oB/P8sGlURRPZVhjkNXmnwHFmvYH1fosKj4/oGsJLZ/VZQX9eJu2m+ARri5q" crossorigin="anonymous"></script>
+    <script>window.ZUPU_LANG = 'zh';</script>
 </head>
 <body>
-    <h1>简易族谱</h1>
+    <h1 data-i18n="heading">简易族谱</h1>
 
     <div class="controls">
-        <label for="fileInput">加载族谱:</label>
+        <label for="fileInput" data-i18n="loadLabel">加载族谱:</label>
         <input type="file" id="fileInput" accept=".json">
-        <button id="newButton">新建</button>
+        <button id="newButton" data-i18n="newTree">新建</button>
 
-        <input type="text" id="searchInput" placeholder="姓名查询...">
-        <button id="searchButton">查询</button>
+        <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="姓名查询...">
+        <button id="searchButton" data-i18n="search">查询</button>
 
-        <button id="saveButton">下载保存</button>
-        <!-- NOT WORKING YET
-        <button id="saveAsSvgButton">Save As SVG</button>
-        <button id="saveAsPdfButton">Save As PDF</button>
-        -->
-        <button id="addPersonButton">添加新成员</button>
-        <button id="saveAsHtmlButton">打印</button>
-        <button id="saveAsSvgTreeButton" title="生成严格核心家庭SVG族谱图">SVG族谱图</button>
-        <button id="fitButton" title="适应屏幕">⛶ 适应</button>
+        <button id="saveButton" data-i18n="save">下载保存</button>
+        <button id="addPersonButton" data-i18n="addPerson">添加新成员</button>
+        <button id="saveAsHtmlButton" data-i18n="print">打印</button>
+        <button id="saveAsSvgTreeButton" data-i18n-title="svgTreeTip" title="生成严格核心家庭SVG族谱图" data-i18n="svgTree">SVG族谱图</button>
+        <button id="undoButton" data-i18n-title="undoTip" title="撤销 (Ctrl+Z)" data-i18n="undo">↩ 撤销</button>
+        <button id="fitButton" data-i18n-title="fitTip" title="适应屏幕" data-i18n="fit">⛶ 适应</button>
     </div>
 
     <div id="searchResults"></div>
 
     <div class="main-container">
-        <div id="cy"></div> <!-- Cytoscape visualization container -->
+        <div id="cy"></div>
         <div id="detailsPanel">
-            <h2>详情 / 编辑</h2>
-            <p>(从关系图上或搜索结果中选择一人)</p>
+            <h2 data-i18n="detailsEdit">详情 / 编辑</h2>
+            <p data-i18n="selectPrompt">(从关系图上或搜索结果中选择一人)</p>
             <div id="editForm" class="hidden">
                 <label for="personId">ID:</label>
                 <input type="text" id="personId" readonly> <br>
 
                 <div class="name-group">
-                    <label for="personSurname">姓:</label>
+                    <label for="personSurname" data-i18n="surname">姓:</label>
                     <input type="text" id="personSurname"> <br>
-                    <label for="personGivenName">名字:</label>
+                    <label for="personGivenName" data-i18n="givenName">名字:</label>
                     <input type="text" id="personGivenName"> <br>
-                    <label for="nameType">获取方式:</label>
+                    <label for="nameType" data-i18n="nameTypeLabel">获取方式:</label>
                     <select id="nameType">
-                        <option value="birth">出生</option>
-                        <option value="married">结婚</option>
-                        <option value="adopted">领养</option>
-                        <option value="nickname">其他</option>
+                        <option value="birth" data-i18n="nameBirth">出生</option>
+                        <option value="married" data-i18n="nameMarried">结婚</option>
+                        <option value="adopted" data-i18n="nameAdopted">领养</option>
+                        <option value="nickname" data-i18n="nameNickname">其他</option>
                     </select> <br>
 
-                    <button id="addNameButton" type="button">添加其他名字</button>
+                    <button id="addNameButton" type="button" data-i18n="addName">添加其他名字</button>
                 </div>
 
                 <div id="additionalNames"></div>
 
-                <label for="personGender">性别:</label>
+                <label for="personGender" data-i18n="genderLabel">性别:</label>
                 <select id="personGender">
-                    <option value="">选择...</option>
-                    <option value="male">男</option>
-                    <option value="female">女</option>
-                    <option value="other">其他</option>
+                    <option value="" data-i18n="genderSelect">选择...</option>
+                    <option value="male" data-i18n="genderMale">男</option>
+                    <option value="female" data-i18n="genderFemale">女</option>
+                    <option value="other" data-i18n="genderOther">其他</option>
                 </select> <br>
 
                 <div class="events-section">
-                    <h3>Events</h3>
-                    <div id="eventsContainer">
-                        <!-- Existing events will be added here dynamically -->
-                    </div>
-                    <button id="addEventButton" type="button">添加事件</button>
+                    <h3 data-i18n="eventsHeading">Events</h3>
+                    <div id="eventsContainer"></div>
+                    <button id="addEventButton" type="button" data-i18n="addEvent">添加事件</button>
                 </div>
 
                 <div class="form-group">
-                    <label for="parentFamilySelect">父母家庭:</label>
+                    <label for="parentFamilySelect" data-i18n="parentFamily">父母家庭:</label>
                     <select id="parentFamilySelect"></select>
                 </div>
                 <div class="form-group">
-                    <label for="spouseFamilySelect">配偶家庭:</label>
+                    <label for="spouseFamilySelect" data-i18n="spouseFamily">配偶家庭:</label>
                     <select id="spouseFamilySelect"></select>
                 </div>
 
-                <button id="saveChangesButton">保存</button>
-                <button id="cancelEditButton">取消</button>
+                <button id="saveChangesButton" data-i18n="saveChanges">保存</button>
+                <button id="cancelEditButton" data-i18n="cancel">取消</button>
                 <p id="editStatus"></p>
             </div>
         </div>

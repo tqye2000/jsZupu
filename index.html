@@ -3,100 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client-Side Family Tree</title>
+    <title data-i18n="title">Client-Side Family Tree</title>
     <link rel="stylesheet" href="style.css">
     <!-- Cytoscape.js library -->
-    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
-    <!-- Optional: Layout extension (dagre) for better tree layout -->
-    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
-    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
-    <!-- PDF Export library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js" integrity="sha384-Q20qNhd/ak9c9XLRBwy3jG/XxBWAdfQNYkZ0bYCKxx/9iI9bUVYvLzOf7lviiPKW" crossorigin="anonymous"></script>
+    <!-- Layout extension (dagre) for tree layout -->
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js" integrity="sha384-2IH3T69EIKYC4c+RXZifZRvaH5SRUdacJW7j6HtE5rQbvLhKKdawxq6vpIzJ7j9M" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js" integrity="sha384-u69h9ebXeSjlg6q/rb1zKTRAGu/h8deCl0409xpS/QJctMKnc4M9Fzkm01VOQdeF" crossorigin="anonymous"></script>
     <!-- SVG Export library -->
-    <script src="https://unpkg.com/cytoscape-svg@0.2.0/cytoscape-svg.js"></script>
+    <script src="https://unpkg.com/cytoscape-svg@0.2.0/cytoscape-svg.js" integrity="sha384-NcK+oB/P8sGlURRPZVhjkNXmnwHFmvYH1fosKj4/oGsJLZ/VZQX9eJu2m+ARri5q" crossorigin="anonymous"></script>
 </head>
 <body>
-    <h1>Family Tree</h1>
+    <h1 data-i18n="heading">Family Tree</h1>
 
     <div class="controls">
-        <label for="fileInput">Load Family Tree:</label>
+        <label for="fileInput" data-i18n="loadLabel">Load Family Tree:</label>
         <input type="file" id="fileInput" accept=".json">
-        <button id="newButton">New Tree</button>
+        <button id="newButton" data-i18n="newTree">New Tree</button>
 
-        <input type="text" id="searchInput" placeholder="Search by name...">
-        <button id="searchButton">Search</button>
+        <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search by name...">
+        <button id="searchButton" data-i18n="search">Search</button>
 
-        <button id="saveButton">Save</button>
-        <!-- NOT WORKING YET
-        <button id="saveAsSvgButton">Save As SVG</button>
-        <button id="saveAsPdfButton">Save As PDF</button>
-        -->
-        <button id="addPersonButton">Add New Person</button>
-        <button id="saveAsHtmlButton">Print</button>
-        <button id="saveAsSvgTreeButton" title="Generate strict nuclear-family SVG tree">SVG Tree</button>
-        <button id="fitButton" title="Fit graph to screen">⛶ Fit</button>
+        <button id="saveButton" data-i18n="save">Save</button>
+        <button id="addPersonButton" data-i18n="addPerson">Add New Person</button>
+        <button id="saveAsHtmlButton" data-i18n="print">Print</button>
+        <button id="saveAsSvgTreeButton" data-i18n-title="svgTreeTip" title="Generate strict nuclear-family SVG tree" data-i18n="svgTree">SVG Tree</button>
+        <button id="undoButton" data-i18n-title="undoTip" title="Undo last change (Ctrl+Z)" data-i18n="undo">↩ Undo</button>
+        <button id="fitButton" data-i18n-title="fitTip" title="Fit graph to screen" data-i18n="fit">⛶ Fit</button>
     </div>
 
     <div id="searchResults"></div>
 
     <div class="main-container">
-        <div id="cy"></div> <!-- Cytoscape visualization container -->
+        <div id="cy"></div>
         <div id="detailsPanel">
-            <h2>Details / Edit</h2>
-            <p>(Select a person in the graph or search results)</p>
+            <h2 data-i18n="detailsEdit">Details / Edit</h2>
+            <p data-i18n="selectPrompt">(Select a person in the graph or search results)</p>
             <div id="editForm" class="hidden">
                 <label for="personId">ID:</label>
                 <input type="text" id="personId" readonly> <br>
 
                 <div class="name-group">
-                    <label for="nameType">Name Type:</label>
+                    <label for="nameType" data-i18n="nameTypeLabel">Name Type:</label>
                     <select id="nameType">
-                        <option value="birth">Birth Name</option>
-                        <option value="married">Married Name</option>
-                        <option value="adopted">Adopted Name</option>
-                        <option value="nickname">Nickname</option>
+                        <option value="birth" data-i18n="nameBirth">Birth Name</option>
+                        <option value="married" data-i18n="nameMarried">Married Name</option>
+                        <option value="adopted" data-i18n="nameAdopted">Adopted Name</option>
+                        <option value="nickname" data-i18n="nameNickname">Nickname</option>
                     </select> <br>
 
-                    <label for="personGivenName">Given Name:</label>
+                    <label for="personGivenName" data-i18n="givenName">Given Name:</label>
                     <input type="text" id="personGivenName"> <br>
 
-                    <label for="personSurname">Surname:</label>
+                    <label for="personSurname" data-i18n="surname">Surname:</label>
                     <input type="text" id="personSurname"> <br>
 
-                    <button id="addNameButton" type="button">Add Additional Name</button>
+                    <button id="addNameButton" type="button" data-i18n="addName">Add Additional Name</button>
                 </div>
 
                 <div id="additionalNames"></div>
 
-                <label for="personGender">Gender:</label>
+                <label for="personGender" data-i18n="genderLabel">Gender:</label>
                 <select id="personGender">
-                    <option value="">Select gender...</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="" data-i18n="genderSelect">Select gender...</option>
+                    <option value="male" data-i18n="genderMale">Male</option>
+                    <option value="female" data-i18n="genderFemale">Female</option>
+                    <option value="other" data-i18n="genderOther">Other</option>
                 </select> <br>
 
                 <div class="events-section">
-                    <h3>Events</h3>
-                    <div id="eventsContainer">
-                        <!-- Existing events will be added here dynamically -->
-                    </div>
-                    <button id="addEventButton" type="button">Add Event</button>
+                    <h3 data-i18n="eventsHeading">Events</h3>
+                    <div id="eventsContainer"></div>
+                    <button id="addEventButton" type="button" data-i18n="addEvent">Add Event</button>
                 </div>
 
                 <div class="form-group">
-                    <label for="parentFamilySelect">Parent Family:</label>
+                    <label for="parentFamilySelect" data-i18n="parentFamily">Parent Family:</label>
                     <select id="parentFamilySelect"></select>
                 </div>
                 <div class="form-group">
-                    <label for="spouseFamilySelect">Spouse Family:</label>
+                    <label for="spouseFamilySelect" data-i18n="spouseFamily">Spouse Family:</label>
                     <select id="spouseFamilySelect"></select>
                 </div>
 
-                <button id="saveChangesButton">Save Changes</button>
-                <button id="cancelEditButton">Cancel</button>
+                <button id="saveChangesButton" data-i18n="saveChanges">Save Changes</button>
+                <button id="cancelEditButton" data-i18n="cancel">Cancel</button>
                 <p id="editStatus"></p>
             </div>
         </div>
