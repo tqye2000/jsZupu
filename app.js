@@ -1038,26 +1038,50 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Determine clan surname: use the most common surname among root people (no parents)
-        let surname = '';
-        const surnameCounts = {};
-        for (const p of familyData.people) {
-            if (!p.familiesAsChild || p.familiesAsChild.length === 0) {
-                const names = p.names || [];
-                const birth = names.find(n => n.type === 'birth') || names[0] || {};
-                const s = birth.surname || '';
-                if (s) surnameCounts[s] = (surnameCounts[s] || 0) + 1;
+        // If a person is currently selected, offer to build subtree from them
+        let startPersonId = null;
+        if (currentlyEditingPersonId) {
+            const person = findPerson(currentlyEditingPersonId);
+            if (person) {
+                const displayName = getDisplayName(person);
+                const useSubtree = confirm(t('subtreeFromPerson', { name: displayName }));
+                if (useSubtree) {
+                    startPersonId = currentlyEditingPersonId;
+                }
             }
         }
-        const sorted = Object.entries(surnameCounts).sort((a, b) => b[1] - a[1]);
-        if (sorted.length > 0) surname = sorted[0][0];
 
-        const inputSurname = prompt(t('enterClanSurname'), surname);
-        if (inputSurname === null) return; // cancelled
-        surname = inputSurname || surname;
+        // Determine clan surname
+        let surname = '';
+        if (startPersonId) {
+            // For subtree: derive surname from the selected person
+            const startPerson = findPerson(startPersonId);
+            if (startPerson) {
+                const names = startPerson.names || [];
+                const birth = names.find(n => n.type === 'birth') || names[0] || {};
+                surname = birth.surname || '';
+            }
+        } else {
+            // For full tree: use the most common surname among root people (no parents)
+            const surnameCounts = {};
+            for (const p of familyData.people) {
+                if (!p.familiesAsChild || p.familiesAsChild.length === 0) {
+                    const names = p.names || [];
+                    const birth = names.find(n => n.type === 'birth') || names[0] || {};
+                    const s = birth.surname || '';
+                    if (s) surnameCounts[s] = (surnameCounts[s] || 0) + 1;
+                }
+            }
+            const sorted = Object.entries(surnameCounts).sort((a, b) => b[1] - a[1]);
+            if (sorted.length > 0) surname = sorted[0][0];
+
+            const inputSurname = prompt(t('enterClanSurname'), surname);
+            if (inputSurname === null) return; // cancelled
+            surname = inputSurname || surname;
+        }
 
         try {
-            const svgContent = Zupu.buildTreeSvg(familyData, surname);
+            const svgContent = Zupu.buildTreeSvg(familyData, surname, startPersonId);
 
             // Open in a new window for preview + download
             const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });

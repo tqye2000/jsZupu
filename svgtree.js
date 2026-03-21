@@ -8,9 +8,10 @@ window.Zupu = window.Zupu || {};
  * Build a strict nuclear-family SVG tree from Zupu JSON data.
  * @param {object} data - The familyData object (people, families, events, …)
  * @param {string} clanSurname - Preferred root surname for filtering
+ * @param {string} [startPersonId] - Optional person ID to use as the root (downstream subtree)
  * @returns {string} SVG markup
  */
-window.Zupu.buildTreeSvg = function (data, clanSurname) {
+window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     if (!clanSurname) clanSurname = '';
 
     const people = {};
@@ -59,20 +60,24 @@ window.Zupu.buildTreeSvg = function (data, clanSurname) {
         return dateVal.replace(/\//g, '-').split('-')[0];
     }
 
-    // 1) Find root ancestors
+    // 1) Find root ancestors (or use startPersonId as the single root)
     let roots = [];
-    for (const pid of Object.keys(people)) {
-        const p = people[pid];
-        if (!p.familiesAsChild || p.familiesAsChild.length === 0) {
-            const [s] = birthName(p);
-            if (s === clanSurname) roots.push(pid);
-        }
-    }
-    if (roots.length === 0) {
-        roots = Object.keys(people).filter(pid => {
+    if (startPersonId && people[startPersonId]) {
+        roots = [startPersonId];
+    } else {
+        for (const pid of Object.keys(people)) {
             const p = people[pid];
-            return !p.familiesAsChild || p.familiesAsChild.length === 0;
-        });
+            if (!p.familiesAsChild || p.familiesAsChild.length === 0) {
+                const [s] = birthName(p);
+                if (s === clanSurname) roots.push(pid);
+            }
+        }
+        if (roots.length === 0) {
+            roots = Object.keys(people).filter(pid => {
+                const p = people[pid];
+                return !p.familiesAsChild || p.familiesAsChild.length === 0;
+            });
+        }
     }
 
     // 2) Traverse descendants + spouses
@@ -98,17 +103,20 @@ window.Zupu.buildTreeSvg = function (data, clanSurname) {
             }
         }
 
-        for (const fid of (people[pid] || {}).familiesAsChild || []) {
-            if (!families[fid]) continue;
-            includedFamilies.add(fid);
-            const fam = families[fid];
-            for (const sp of (fam.partners || [])) {
-                if (!includedPeople.has(sp)) includedPeople.add(sp);
-            }
-            for (const c of (fam.children || [])) {
-                if (!includedPeople.has(c)) {
-                    includedPeople.add(c);
-                    queue.push(c);
+        // Only traverse upward (familiesAsChild) when NOT building a downstream subtree
+        if (!startPersonId) {
+            for (const fid of (people[pid] || {}).familiesAsChild || []) {
+                if (!families[fid]) continue;
+                includedFamilies.add(fid);
+                const fam = families[fid];
+                for (const sp of (fam.partners || [])) {
+                    if (!includedPeople.has(sp)) includedPeople.add(sp);
+                }
+                for (const c of (fam.children || [])) {
+                    if (!includedPeople.has(c)) {
+                        includedPeople.add(c);
+                        queue.push(c);
+                    }
                 }
             }
         }
