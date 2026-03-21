@@ -686,7 +686,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventElements = eventsContainer.querySelectorAll('.event-item');
         eventElements.forEach(eventElement => {
             const eventId = eventElement.querySelector('.event-id').value;
-            const eventType = eventElement.querySelector('.event-type').value;
+            const eventTypeSelect = eventElement.querySelector('.event-type').value;
+            const eventCustomType = eventElement.querySelector('.event-custom-type').value.trim();
+            const eventType = (eventTypeSelect === 'other' && eventCustomType) ? eventCustomType : eventTypeSelect;
             const eventDate = eventElement.querySelector('.event-date').value.trim();
             const eventDateQualifier = eventElement.querySelector('.event-date-qualifier').value;
             const eventPlace = eventElement.querySelector('.event-place').value.trim();
@@ -902,12 +904,21 @@ document.addEventListener('DOMContentLoaded', () => {
         additionalNamesDiv.appendChild(nameDiv);
     }
 
+    const PREDEFINED_EVENT_TYPES = ['birth', 'death', 'marriage', 'divorce', 'residence', 'burial'];
+
     function addEventField(eventData = null) {
         const eventDiv = document.createElement('div');
         eventDiv.className = 'event-item';
         
         // Generate a unique event ID if this is a new event
         const eventId = eventData?.id || generateId('e');
+
+        // Determine if the existing type is a custom (non-predefined) one
+        const existingType = eventData?.type || '';
+        const isCustomType = existingType && !PREDEFINED_EVENT_TYPES.includes(existingType) && existingType !== 'other';
+        const selectValue = isCustomType ? 'other' : existingType;
+        const customValue = isCustomType ? existingType : '';
+        const showCustom = selectValue === 'other' || isCustomType;
         
         eventDiv.innerHTML = `
             <button type="button" class="remove-event-button">×</button>
@@ -915,14 +926,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <label>Event Type:</label>
             <select class="event-type">
-                <option value="birth" ${eventData?.type === 'birth' ? 'selected' : ''}>Birth</option>
-                <option value="death" ${eventData?.type === 'death' ? 'selected' : ''}>Death</option>
-                <option value="marriage" ${eventData?.type === 'marriage' ? 'selected' : ''}>Marriage</option>
-                <option value="divorce" ${eventData?.type === 'divorce' ? 'selected' : ''}>Divorce</option>
-                <option value="residence" ${eventData?.type === 'residence' ? 'selected' : ''}>Residence</option>
-                <option value="burial" ${eventData?.type === 'burial' ? 'selected' : ''}>Burial</option>
-                <option value="other" ${eventData?.type === 'other' ? 'selected' : ''}>Other</option>
+                <option value="birth" ${selectValue === 'birth' ? 'selected' : ''}>Birth</option>
+                <option value="death" ${selectValue === 'death' ? 'selected' : ''}>Death</option>
+                <option value="marriage" ${selectValue === 'marriage' ? 'selected' : ''}>Marriage</option>
+                <option value="divorce" ${selectValue === 'divorce' ? 'selected' : ''}>Divorce</option>
+                <option value="residence" ${selectValue === 'residence' ? 'selected' : ''}>Residence</option>
+                <option value="burial" ${selectValue === 'burial' ? 'selected' : ''}>Burial</option>
+                <option value="other" ${selectValue === 'other' ? 'selected' : ''}>Other…</option>
             </select>
+
+            <input type="text" class="event-custom-type" placeholder="Enter custom event type"
+                   value="${escapeHtml(customValue)}" style="display:${showCustom ? 'block' : 'none'}">
 
             <label>Date:</label>
             <input type="text" class="event-date" placeholder="YYYY-MM-DD or YYYY" 
@@ -940,6 +954,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="text" class="event-place" placeholder="Location of event"
                    value="${escapeHtml(eventData?.placeRef)}">
         `;
+
+        // Toggle custom type input visibility when select changes
+        const typeSelect = eventDiv.querySelector('.event-type');
+        const customInput = eventDiv.querySelector('.event-custom-type');
+        typeSelect.addEventListener('change', () => {
+            const isOther = typeSelect.value === 'other';
+            customInput.style.display = isOther ? 'block' : 'none';
+            if (isOther) customInput.focus();
+        });
 
         eventDiv.querySelector('.remove-event-button').addEventListener('click', () => {
             eventDiv.remove();
