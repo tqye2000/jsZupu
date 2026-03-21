@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveAsHtmlButton = document.getElementById('saveAsHtmlButton');
     const saveAsSvgTreeButton = document.getElementById('saveAsSvgTreeButton');
     const fitButton = document.getElementById('fitButton');
+    const deletePersonButton = document.getElementById('deletePersonButton');
     
     // --- Event Listeners ---
     fileInput.addEventListener('change', handleFileLoad);
@@ -120,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
     if (saveAsSvgTreeButton) saveAsSvgTreeButton.addEventListener('click', handleSaveAsSvgTree);
     if (undoButton) undoButton.addEventListener('click', performUndo);
+    if (deletePersonButton) deletePersonButton.addEventListener('click', handleDeletePerson);
     fitButton.addEventListener('click', () => {
         if (cy) {
             cy.animate({ fit: { eles: cy.elements(), padding: 40 } }, { duration: 400 });
@@ -146,6 +148,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function findFamily(fid) {
         return familiesById.get(fid);
+    }
+
+    /** Remove families that have no partners and no children. */
+    function cleanupOrphanedFamilies() {
+        familyData.families = familyData.families.filter(f => {
+            const hasPartners = (f.partners || []).length > 0;
+            const hasChildren = (f.children || []).length > 0;
+            return hasPartners || hasChildren;
+        });
+    }
+
+    /** Delete the currently-editing person and all their references. */
+    function handleDeletePerson() {
+        if (!currentlyEditingPersonId) return;
+        const person = findPerson(currentlyEditingPersonId);
+        if (!person) return;
+
+        const displayName = getDisplayName(person);
+        if (!confirm(`Are you sure you want to delete "${displayName}"? This can be undone with Ctrl+Z.`)) {
+            return;
+        }
+
+        pushUndo();
+
+        const pid = person.id;
+
+        // Remove person from all families (as partner and as child)
+        familyData.families.forEach(f => {
+            f.partners = (f.partners || []).filter(id => id !== pid);
+            f.children = (f.children || []).filter(id => id !== pid);
+        });
+
+        // Remove all events referencing this person
+        familyData.events = familyData.events.filter(ev => ev.personRef !== pid);
+
+        // Remove the person record itself
+        familyData.people = familyData.people.filter(p => p.id !== pid);
+
+        // Clean up now-empty families
+        cleanupOrphanedFamilies();
+
+        rebuildIndexes();
+        initializeCytoscape();
+        hideEditForm();
+        clearSearchResults();
+        isDirty = true;
+
+        editStatus.textContent = `"${displayName}" deleted.`;
+        editStatus.style.color = 'green';
     }
 
     /**
@@ -284,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFamilySelectors(person);
         
         saveChangesButton.textContent = 'Save Changes';
+        if (deletePersonButton) deletePersonButton.classList.remove('hidden');
         detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personSurnameInput.value} ${personGivenNameInput.value}`;
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
@@ -293,8 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
         eventsContainer.innerHTML = '';
         
         if (person) {
-            // Get all events for this person
-            const personEvents = familyData.events.filter(event => event.personRef === person.id);
+            // Get all events for this person via index
+            const personEvents = eventsByPerson.get(person.id) || [];
             personEvents.forEach(event => {
                 addEventField(event);
             });
@@ -328,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
         saveChangesButton.textContent = "Add Person";
+        if (deletePersonButton) deletePersonButton.classList.add('hidden');
         editStatus.textContent = '';
 
         // Clear selection in group
@@ -479,6 +532,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Rebuild indexes after mutation
+        rebuildIndexes();
+
+        // Remove families left with no partners and no children
+        cleanupOrphanedFamilies();
         rebuildIndexes();
 
         // Update Cytoscape graph
@@ -791,6 +848,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSaveAsHtml() {
         if (familyData.people.length === 0 && familyData.families.length === 0) {
             alert("No data to export.");
+            return;
+        }
+        if (!cy) {
+            alert("Graph not initialized.");
             return;
         }
     

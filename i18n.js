@@ -24,6 +24,7 @@ window.Zupu.i18n = (function () {
             eventsHeading: '事件', addEvent: '添加事件',
             parentFamily: '父母家庭:', spouseFamily: '配偶家庭:',
             saveChanges: '保存', cancel: '取消',
+            deletePerson: '删除此人', deleteConfirm: '确定要删除此人吗？此操作可以通过撤销恢复。',
         }
     };
 

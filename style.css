@@ -271,3 +271,14 @@ h1, h2 {
 #addEventButton:hover {
     background-color: #45a049;
 }
+
+#deletePersonButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#deletePersonButton:hover {
+    background-color: #a71d2a;
+}
