@@ -18,8 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- i18n (see i18n.js) ---
     Zupu.i18n.apply(Zupu.i18n.detect());
 
-    // --- Utility aliases (see utils.js) ---
+    // --- Utility aliases (see utils.js / i18n.js) ---
     const { generateId, escapeHtml, getDisplayName } = Zupu.utils;
+    const t = Zupu.i18n.t;
 
     // --- Globals ---
     let familyData = { people: [], families: [], events: [], places: [], sources: [], notes: [], meta: {} };
@@ -166,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!person) return;
 
         const displayName = getDisplayName(person);
-        if (!confirm(`Are you sure you want to delete "${displayName}"? This can be undone with Ctrl+Z.`)) {
+        if (!confirm(t('deleteConfirm', { name: displayName }))) {
             return;
         }
 
@@ -195,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearSearchResults();
         isDirty = true;
 
-        editStatus.textContent = `"${displayName}" deleted.`;
+        editStatus.textContent = t('personDeleted', { name: displayName });
         editStatus.style.color = 'green';
     }
 
@@ -261,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function buildFamilyTableData() {
         const tableData = [
-            ['ID', 'Name', 'Gender', 'Birth', 'Death', 'Parents', 'Spouses', 'Children']
+            [t('tableId'), t('tableName'), t('tableGender'), t('tableBirth'), t('tableDeath'), t('tableParents'), t('tableSpouses'), t('tableChildren')]
         ];
 
         familyData.people.forEach(person => {
@@ -313,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- #7  File size guard (5 MB) ---
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
         if (file.size > MAX_FILE_SIZE) {
-            alert(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed is 5 MB.`);
+            alert(t('fileTooLarge', { size: (file.size / 1024 / 1024).toFixed(1) }));
             fileInput.value = '';
             return;
         }
@@ -352,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (warnings.length > 0) {
                         console.warn('Data issues found on load:', warnings);
-                        alert('Data loaded with warnings:\n• ' + warnings.join('\n• '));
+                        alert(t('dataLoadedWarnings') + '\n• ' + warnings.join('\n• '));
                     }
 
                     console.log("Family data loaded:", familyData);
@@ -362,15 +363,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     hideEditForm();
                     isDirty = false; // Fresh load, no unsaved changes
                 } else {
-                    alert("Invalid JSON format. Missing 'people' or 'families' array.");
+                    alert(t('invalidJsonFormat'));
                 }
             } catch (error) {
-                alert(`Error parsing JSON file: ${error.message}`);
+                alert(t('errorParsingJson', { error: error.message }));
                 console.error("JSON Parsing Error:", error);
             }
         };
         reader.onerror = () => {
-            alert(`Error reading file: ${reader.error}`);
+            alert(t('errorReadingFile', { error: reader.error }));
         };
         reader.readAsText(file);
     }
@@ -421,9 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update family selectors
         updateFamilySelectors(person);
         
-        saveChangesButton.textContent = 'Save Changes';
+        saveChangesButton.textContent = t('saveChanges');
         if (deletePersonButton) deletePersonButton.classList.remove('hidden');
-        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personSurnameInput.value} ${personGivenNameInput.value}`;
+        detailsPanel.querySelector('h2').textContent = t('detailsEdit') + ': ' + personSurnameInput.value + ' ' + personGivenNameInput.value;
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
         editStatus.textContent = '';
@@ -442,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function hideEditForm() {
         editForm.classList.add('hidden');
-        detailsPanel.querySelector('h2').textContent = 'Details / Edit';
+        detailsPanel.querySelector('h2').textContent = t('detailsEdit');
         detailsPanel.querySelector('p').classList.remove('hidden');
         currentlyEditingPersonId = null;
         editStatus.textContent = '';
@@ -463,10 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset family selectors
         updateFamilySelectors();
         
-        detailsPanel.querySelector('h2').textContent = 'Add New Person';
+        detailsPanel.querySelector('h2').textContent = t('addPerson');
         detailsPanel.querySelector('p').classList.add('hidden');
         editForm.classList.remove('hidden');
-        saveChangesButton.textContent = "Add Person";
+        saveChangesButton.textContent = t('addPersonBtn');
         if (deletePersonButton) deletePersonButton.classList.add('hidden');
         editStatus.textContent = '';
 
@@ -505,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Validate that at least one name has some content
         const hasValidName = names.some(name => name.given || name.surname);
         if (!hasValidName) {
-            editStatus.textContent = 'Error: Please enter at least one name.';
+            editStatus.textContent = t('errorNoName');
             editStatus.style.color = 'red';
             return;
         }
@@ -642,10 +643,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        editStatus.textContent = 'Changes saved!';
+        editStatus.textContent = t('changesSaved');
         editStatus.style.color = 'green';
         isDirty = true; // Mark as having unsaved changes
-        detailsPanel.querySelector('h2').textContent = `Details / Edit: ${personGivenNameInput.value} ${personSurnameInput.value}`; // Update panel title
+        detailsPanel.querySelector('h2').textContent = t('detailsEdit') + ': ' + personGivenNameInput.value + ' ' + personSurnameInput.value; // Update panel title
 
         // Optionally hide form after a short delay
         // setTimeout(hideEditForm, 1500);
@@ -691,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (results.length === 0) {
-            searchResultsDiv.textContent = 'No results found.';
+            searchResultsDiv.textContent = t('noResults');
         } else {
             results.forEach(({ person, matchHint }) => {
                 const displayName = getDisplayName(person);
@@ -699,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 span.textContent = matchHint ? `${displayName} (${matchHint})` : displayName;
                 span.classList.add('search-result-item');
                 span.dataset.id = person.id;
-                span.title = `Click to view details for ${displayName} (${person.id})`;
+                span.title = t('clickToView', { name: displayName, id: person.id });
                 span.addEventListener('click', () => {
                     displayPersonDetails(person.id);
                     if (cy) {
@@ -725,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleSaveFile() {
         if (familyData.people.length === 0 && familyData.families.length === 0) {
-            alert("No data to save.");
+            alert(t('noDataToSave'));
             return;
         }
 
@@ -747,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // For new files, prompt for filename
                 const defaultFilename = "family_tree.json";
-                const filename = prompt("Enter filename to save:", defaultFilename);
+                const filename = prompt(t('enterFilename'), defaultFilename);
                 if (!filename) {
                     URL.revokeObjectURL(url);
                     return; // User cancelled
@@ -762,13 +763,13 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(url);
             
             editStatus.textContent = currentFileName ? 
-                `File "${currentFileName}" saved successfully!` : 
-                'File saved successfully!';
+                t('fileSavedAs', { name: currentFileName }) : 
+                t('fileSaved');
             editStatus.style.color = 'green';
             isDirty = false; // Clear dirty flag after successful save
 
         } catch (error) {
-            alert(`Error saving file: ${error.message}`);
+            alert(t('errorSavingFile', { error: error.message }));
             console.error("Saving Error:", error);
         }
     }
@@ -776,11 +777,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add new function to update family selectors
     function updateFamilySelectors(person = null) {
         // Clear existing options
-        parentFamilySelect.innerHTML = '<option value="">Select Parent Family...</option>';
-        spouseFamilySelect.innerHTML = '<option value="">Select/Create Spouse Family...</option>';
+        parentFamilySelect.innerHTML = '<option value="">' + escapeHtml(t('selectParentFamily')) + '</option>';
+        spouseFamilySelect.innerHTML = '<option value="">' + escapeHtml(t('selectSpouseFamily')) + '</option>';
 
         // Add "Create New Family" option for spouse selector
-        const newFamilyOption = new Option('Create New Family...', 'new');
+        const newFamilyOption = new Option(t('createNewFamily'), 'new');
         spouseFamilySelect.appendChild(newFamilyOption);
 
         // Add existing families as options
@@ -794,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return getDisplayName(partner) || pid;
             }).join(' & ');
 
-            const familyLabel = partnerNames ? `Family: ${partnerNames}` : `Family ${family.id}`;
+            const familyLabel = partnerNames ? t('familyLabel', { names: partnerNames }) : t('familyLabelId', { id: family.id });
 
             // Add to parent family selector if person isn't a partner
             if (!partners.includes(person?.id)) {
@@ -826,16 +827,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         nameDiv.innerHTML = `
             <select class="name-type">
-                <option value="birth" ${nameData?.type === 'birth' ? 'selected' : ''}>Birth Name</option>
-                <option value="married" ${nameData?.type === 'married' ? 'selected' : ''}>Married Name</option>
-                <option value="adopted" ${nameData?.type === 'adopted' ? 'selected' : ''}>Adopted Name</option>
-                <option value="nickname" ${nameData?.type === 'nickname' ? 'selected' : ''}>Nickname</option>
+                <option value="birth" ${nameData?.type === 'birth' ? 'selected' : ''}>${t('nameBirth')}</option>
+                <option value="married" ${nameData?.type === 'married' ? 'selected' : ''}>${t('nameMarried')}</option>
+                <option value="adopted" ${nameData?.type === 'adopted' ? 'selected' : ''}>${t('nameAdopted')}</option>
+                <option value="nickname" ${nameData?.type === 'nickname' ? 'selected' : ''}>${t('nameNickname')}</option>
             </select><br>
-            <label>Given Name:</label>
+            <label>${t('givenName')}</label>
             <input type="text" class="given-name" value="${escapeHtml(nameData?.given)}"><br>
-            <label>Surname:</label>
+            <label>${t('surname')}</label>
             <input type="text" class="surname" value="${escapeHtml(nameData?.surname)}">
-            <button type="button" class="remove-name-button">Remove</button>
+            <button type="button" class="remove-name-button">${t('removeBtn')}</button>
         `;
 
         nameDiv.querySelector('.remove-name-button').addEventListener('click', () => {
@@ -865,34 +866,34 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="remove-event-button">×</button>
             <input type="hidden" class="event-id" value="${escapeHtml(eventId)}">
             
-            <label>Event Type:</label>
+            <label>${t('eventTypeLabel')}</label>
             <select class="event-type">
-                <option value="birth" ${selectValue === 'birth' ? 'selected' : ''}>Birth</option>
-                <option value="death" ${selectValue === 'death' ? 'selected' : ''}>Death</option>
-                <option value="marriage" ${selectValue === 'marriage' ? 'selected' : ''}>Marriage</option>
-                <option value="divorce" ${selectValue === 'divorce' ? 'selected' : ''}>Divorce</option>
-                <option value="residence" ${selectValue === 'residence' ? 'selected' : ''}>Residence</option>
-                <option value="burial" ${selectValue === 'burial' ? 'selected' : ''}>Burial</option>
-                <option value="other" ${selectValue === 'other' ? 'selected' : ''}>Other…</option>
+                <option value="birth" ${selectValue === 'birth' ? 'selected' : ''}>${t('eventBirth')}</option>
+                <option value="death" ${selectValue === 'death' ? 'selected' : ''}>${t('eventDeath')}</option>
+                <option value="marriage" ${selectValue === 'marriage' ? 'selected' : ''}>${t('eventMarriage')}</option>
+                <option value="divorce" ${selectValue === 'divorce' ? 'selected' : ''}>${t('eventDivorce')}</option>
+                <option value="residence" ${selectValue === 'residence' ? 'selected' : ''}>${t('eventResidence')}</option>
+                <option value="burial" ${selectValue === 'burial' ? 'selected' : ''}>${t('eventBurial')}</option>
+                <option value="other" ${selectValue === 'other' ? 'selected' : ''}>${t('eventOther')}</option>
             </select>
 
-            <input type="text" class="event-custom-type" placeholder="Enter custom event type"
+            <input type="text" class="event-custom-type" placeholder="${escapeHtml(t('customEventPlaceholder'))}"
                    value="${escapeHtml(customValue)}" style="display:${showCustom ? 'block' : 'none'}">
 
-            <label>Date:</label>
-            <input type="text" class="event-date" placeholder="YYYY-MM-DD or YYYY" 
+            <label>${t('dateLabel')}</label>
+            <input type="text" class="event-date" placeholder="${escapeHtml(t('datePlaceholder'))}" 
                    value="${escapeHtml(eventData?.date?.value)}">
 
-            <label>Date Qualifier:</label>
+            <label>${t('dateQualifierLabel')}</label>
             <select class="event-date-qualifier">
-                <option value="exact" ${eventData?.date?.qualifier === 'exact' ? 'selected' : ''}>Exact</option>
-                <option value="about" ${eventData?.date?.qualifier === 'about' ? 'selected' : ''}>About</option>
-                <option value="before" ${eventData?.date?.qualifier === 'before' ? 'selected' : ''}>Before</option>
-                <option value="after" ${eventData?.date?.qualifier === 'after' ? 'selected' : ''}>After</option>
+                <option value="exact" ${eventData?.date?.qualifier === 'exact' ? 'selected' : ''}>${t('dateExact')}</option>
+                <option value="about" ${eventData?.date?.qualifier === 'about' ? 'selected' : ''}>${t('dateAbout')}</option>
+                <option value="before" ${eventData?.date?.qualifier === 'before' ? 'selected' : ''}>${t('dateBefore')}</option>
+                <option value="after" ${eventData?.date?.qualifier === 'after' ? 'selected' : ''}>${t('dateAfter')}</option>
             </select>
 
-            <label>Place:</label>
-            <input type="text" class="event-place" placeholder="Location of event"
+            <label>${t('placeLabel')}</label>
+            <input type="text" class="event-place" placeholder="${escapeHtml(t('placePlaceholder'))}"
                    value="${escapeHtml(eventData?.placeRef)}">
         `;
 
@@ -915,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleNewTree() {
         // Warn if there are unsaved changes
         if (isDirty) {
-            if (!confirm('You have unsaved changes. Are you sure you want to create a new tree?')) {
+            if (!confirm(t('unsavedChangesConfirm'))) {
                 return;
             }
         }
@@ -952,18 +953,18 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeCytoscape();
 
         // Show success message
-        editStatus.textContent = 'New family tree created!';
+        editStatus.textContent = t('newTreeCreated');
         editStatus.style.color = 'green';
         isDirty = false; // New tree starts clean
     }
 
     function handleSaveAsHtml() {
         if (familyData.people.length === 0 && familyData.families.length === 0) {
-            alert("No data to export.");
+            alert(t('noDataToExport'));
             return;
         }
         if (!cy) {
-            alert("Graph not initialized.");
+            alert(t('graphNotInitialized'));
             return;
         }
     
@@ -985,7 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Family Tree</title>
+        <title>${escapeHtml(t('familyTreeTitle'))}</title>
         <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; }
@@ -997,9 +998,9 @@ document.addEventListener('DOMContentLoaded', () => {
     </head>
     <body>
         <div class="print-button">
-            <button onclick="window.print()">Print</button>
+            <button onclick="window.print()">${escapeHtml(t('print'))}</button>
         </div>
-        <h1>Family Tree</h1>
+        <h1>${escapeHtml(t('familyTreeTitle'))}</h1>
         <div>${svgContent}</div>
         <table>
             <thead>
@@ -1033,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleSaveAsSvgTree() {
         if (familyData.people.length === 0) {
-            alert('No data to export. Load a family tree first.');
+            alert(t('noDataToExportSvg'));
             return;
         }
 
@@ -1051,7 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorted = Object.entries(surnameCounts).sort((a, b) => b[1] - a[1]);
         if (sorted.length > 0) surname = sorted[0][0];
 
-        const inputSurname = prompt('Enter clan surname for root filtering:', surname);
+        const inputSurname = prompt(t('enterClanSurname'), surname);
         if (inputSurname === null) return; // cancelled
         surname = inputSurname || surname;
 
@@ -1064,13 +1065,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const newWindow = window.open('', '_blank');
             if (!newWindow) {
-                alert('Pop-up blocked. Please allow pop-ups for this page.');
+                alert(t('popupBlocked'));
                 URL.revokeObjectURL(url);
                 return;
             }
             newWindow.document.open();
             newWindow.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>${escapeHtml(surname)}氏 Family Tree SVG</title>
+<html><head><meta charset="UTF-8"><title>${escapeHtml(t('svgWindowTitle', { surname }))}</title>
 <style>
 body { margin: 0; padding: 16px; background: #f0f0f0; font-family: Arial, sans-serif; }
 .toolbar { padding: 10px; background: #fff; border-bottom: 1px solid #ccc; margin-bottom: 10px;
@@ -1081,8 +1082,8 @@ body { margin: 0; padding: 16px; background: #f0f0f0; font-family: Arial, sans-s
 .svg-container { background: white; display: inline-block; border: 1px solid #ccc; border-radius: 4px; }
 </style></head><body>
 <div class="toolbar">
-  <button onclick="downloadSvg()">Download SVG</button>
-  <span>Scroll to explore the tree</span>
+  <button onclick="downloadSvg()">${escapeHtml(t('downloadSvgBtn'))}</button>
+  <span>${escapeHtml(t('scrollToExplore'))}</span>
 </div>
 <div class="svg-container">${svgContent}</div>
 <script>
@@ -1101,7 +1102,7 @@ function downloadSvg() {
             newWindow.document.close();
             URL.revokeObjectURL(url);
         } catch (err) {
-            alert('Error generating SVG tree: ' + err.message);
+            alert(t('errorGeneratingSvg', { error: err.message }));
             console.error(err);
         }
     }

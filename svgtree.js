@@ -402,7 +402,7 @@ window.Zupu.buildTreeSvg = function (data, clanSurname) {
              '<feDropShadow dx="0" dy="1.2" stdDeviation="1.2" flood-opacity="0.16"/></filter></defs>');
     svg.push('<rect width="100%" height="100%" fill="white"/>');
     svg.push(`<text x="${PAD}" y="${PAD}" font-size="18" font-weight="700" ` +
-             `font-family="Arial, sans-serif">${svgEsc(clanSurname)}氏家族关系图（严格核心家庭分组）</text>`);
+             `font-family="Arial, sans-serif">${svgEsc(Zupu.i18n.t('svgChartTitle', { surname: clanSurname }))}</text>`);
 
     // lines
     svg.push('<g stroke="#555" stroke-width="1.4" fill="none">');
