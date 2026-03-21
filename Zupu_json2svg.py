@@ -476,8 +476,8 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
         # vertical text: one character per line
         txt = person_label(p, pid)
         chars = list(txt)
-        top = y + 13
-        line_h = 11.0
+        top = y + 18
+        line_h = 16.5
 
         # Reserve space at the bottom for birth/death years if available
         by = birth_year.get(pid, "")
@@ -489,7 +489,7 @@ def build_tree_svg(data: dict, clan_surname: str = "叶") -> str:
 
         for i, ch in enumerate(chars[:max_lines]):
             svg.append(f'<text x="{x + NODE_W/2}" y="{top + i*line_h}" '
-                       f'text-anchor="middle" font-size="10.5" fill="#111">{esc(ch)}</text>')
+                       f'text-anchor="middle" font-size="15" fill="#111">{esc(ch)}</text>')
 
         # Birth/death years at the bottom of the box
         year_y = y + NODE_H - 4 - (year_lines - 1) * 9
