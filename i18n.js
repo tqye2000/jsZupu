@@ -38,6 +38,9 @@ window.Zupu.i18n = (function () {
             customEventPlaceholder: 'Enter custom event type',
             datePlaceholder: 'YYYY-MM-DD or YYYY',
             placePlaceholder: 'Location of event',
+            // Notes
+            notesHeading: 'Notes', addNote: 'Add Note',
+            notePlaceholder: 'Enter note text...',
             // Family selectors
             parentFamily: 'Parent Family:', spouseFamily: 'Spouse Family:',
             selectParentFamily: 'Select Parent Family...',
@@ -116,6 +119,9 @@ window.Zupu.i18n = (function () {
             customEventPlaceholder: '输入自定义事件类型',
             datePlaceholder: 'YYYY-MM-DD 或 YYYY',
             placePlaceholder: '事件地点',
+            // Notes
+            notesHeading: '备注', addNote: '添加备注',
+            notePlaceholder: '输入备注内容...',
             // Family selectors
             parentFamily: '父母家庭:', spouseFamily: '配偶家庭:',
             selectParentFamily: '选择父母家庭...',

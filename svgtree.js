@@ -32,6 +32,17 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         else if (ev.type === 'death') deathYear[pref] = yr;
     }
 
+    // Build notes lookup: personId -> [noteText, ...]
+    const notes = data.notes || [];
+    const notesById = {};
+    for (const n of notes) notesById[n.id] = n.text || '';
+    const personNotes = {};
+    for (const p of (data.people || [])) {
+        const refs = p.noteRefs || [];
+        if (refs.length === 0) continue;
+        personNotes[p.id] = refs.map(ref => notesById[ref] || ref).filter(Boolean);
+    }
+
     function birthName(person) {
         const names = person.names || [];
         const birth = names.find(n => n.type === 'birth') || names[0] || {};
@@ -482,6 +493,14 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
 
         svg.push(`<text x="${x + NODE_W - 3}" y="${y + 10}" text-anchor="end" ` +
                  `font-size="8.5" fill="#666">G${(gen[pid] || 0) + 1}</text>`);
+
+        // Note indicator
+        const pNotes = personNotes[pid];
+        if (pNotes && pNotes.length > 0) {
+            svg.push(`<text x="${x + 4}" y="${y + 10}" font-size="9" fill="#C62828">※</text>`);
+            svg.push(`<title>${svgEsc(pNotes.join('\n'))}</title>`);
+        }
+
         svg.push('</g>');
     }
     svg.push('</g>');

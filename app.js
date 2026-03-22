@@ -99,6 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const additionalNamesDiv = document.getElementById('additionalNames');
     const eventsContainer = document.getElementById('eventsContainer');
     const addEventButton = document.getElementById('addEventButton');
+    const notesContainer = document.getElementById('notesContainer');
+    const addNoteButton = document.getElementById('addNoteButton');
     const saveAsHtmlButton = document.getElementById('saveAsHtmlButton');
     const saveAsSvgTreeButton = document.getElementById('saveAsSvgTreeButton');
     const fitButton = document.getElementById('fitButton');
@@ -119,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelEditButton.addEventListener('click', hideEditForm);
     addNameButton.addEventListener('click', addNameField);
     addEventButton.addEventListener('click', () => addEventField());
+    addNoteButton.addEventListener('click', () => addNoteField());
     saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
     if (saveAsSvgTreeButton) saveAsSvgTreeButton.addEventListener('click', handleSaveAsSvgTree);
     if (undoButton) undoButton.addEventListener('click', performUndo);
@@ -183,6 +186,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Remove all events referencing this person
         familyData.events = familyData.events.filter(ev => ev.personRef !== pid);
+
+        // Remove notes referenced only by this person
+        const noteRefs = person.noteRefs || [];
+        noteRefs.forEach(ref => {
+            const idx = familyData.notes.findIndex(n => n.id === ref);
+            if (idx !== -1) familyData.notes.splice(idx, 1);
+        });
 
         // Remove the person record itself
         familyData.people = familyData.people.filter(p => p.id !== pid);
@@ -439,6 +449,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 addEventField(event);
             });
         }
+
+        // Clear and populate notes
+        notesContainer.innerHTML = '';
+        if (person) {
+            const noteRefs = person.noteRefs || [];
+            noteRefs.forEach(ref => {
+                const noteObj = familyData.notes.find(n => n.id === ref);
+                if (noteObj) {
+                    addNoteField({ id: noteObj.id, text: noteObj.text });
+                } else {
+                    // Plain text noteRef (legacy)
+                    addNoteField({ id: null, text: ref });
+                }
+            });
+        }
     }
 
     function hideEditForm() {
@@ -460,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nameTypeSelect.value = 'birth';
         additionalNamesDiv.innerHTML = ''; // Clear any additional name fields
         eventsContainer.innerHTML = ''; // Clear any existing events
+        notesContainer.innerHTML = ''; // Clear any existing notes
         
         // Reset family selectors
         updateFamilySelectors();
@@ -587,6 +613,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+
+        // Handle notes
+        const oldNoteRefs = person.noteRefs || [];
+        // Remove old note objects that were referenced by this person
+        oldNoteRefs.forEach(ref => {
+            const idx = familyData.notes.findIndex(n => n.id === ref);
+            if (idx !== -1) familyData.notes.splice(idx, 1);
+        });
+        person.noteRefs = [];
+        const noteElements = notesContainer.querySelectorAll('.note-item');
+        noteElements.forEach(noteEl => {
+            const noteText = noteEl.querySelector('.note-text').value.trim();
+            if (noteText) {
+                const noteId = noteEl.dataset.noteId || generateId('n');
+                familyData.notes.push({ id: noteId, text: noteText });
+                person.noteRefs.push(noteId);
+            }
+        });
 
         // Handle events
         // First, remove all existing events for this person
@@ -844,6 +888,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         additionalNamesDiv.appendChild(nameDiv);
+    }
+
+    function addNoteField(noteData = null) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'note-item';
+        if (noteData?.id) noteDiv.dataset.noteId = noteData.id;
+
+        noteDiv.innerHTML = `
+            <button type="button" class="remove-note-button">×</button>
+            <textarea class="note-text" rows="3" placeholder="${escapeHtml(t('notePlaceholder'))}">${escapeHtml(noteData?.text)}</textarea>
+        `;
+
+        noteDiv.querySelector('.remove-note-button').addEventListener('click', () => {
+            noteDiv.remove();
+        });
+
+        notesContainer.appendChild(noteDiv);
     }
 
     const PREDEFINED_EVENT_TYPES = ['birth', 'death', 'marriage', 'divorce', 'residence', 'burial'];
