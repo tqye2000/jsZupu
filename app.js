@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!eventsByPerson.has(ev.personRef)) eventsByPerson.set(ev.personRef, []);
             eventsByPerson.get(ev.personRef).push(ev);
         }
+
+        updateSvgRootSurnameSelector();
     }
 
     // --- Undo stack ---
@@ -103,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNoteButton = document.getElementById('addNoteButton');
     const saveAsHtmlButton = document.getElementById('saveAsHtmlButton');
     const saveAsSvgTreeButton = document.getElementById('saveAsSvgTreeButton');
+    const svgRootSurnameSelect = document.getElementById('svgRootSurnameSelect');
     const fitButton = document.getElementById('fitButton');
     const deletePersonButton = document.getElementById('deletePersonButton');
     
@@ -142,6 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
             performUndo();
         }
     });
+
+    updateSvgRootSurnameSelector();
 
 
     // --- Functions ---
@@ -1093,6 +1098,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // SVG Tree Export  (builder lives in svgtree.js)
     // ================================================================
 
+    function getTopLevelSurnameCounts() {
+        const counts = {};
+
+        function hasParents(person) {
+            return !!(person && person.familiesAsChild && person.familiesAsChild.length > 0);
+        }
+
+        function addSurnameForPerson(personId) {
+            const person = findPerson(personId);
+            if (!person || hasParents(person)) return;
+            const names = person.names || [];
+            const birth = names.find(n => n.type === 'birth') || names[0] || {};
+            const surname = birth.surname || '';
+            if (!surname) return;
+            counts[surname] = (counts[surname] || 0) + 1;
+        }
+
+        // Root families: all listed partners have no parent-family link.
+        for (const family of familyData.families) {
+            const partners = (family.partners || []).filter(pid => !!findPerson(pid));
+            if (partners.length === 0) continue;
+            if (partners.some(pid => hasParents(findPerson(pid)))) continue;
+            partners.forEach(addSurnameForPerson);
+        }
+
+        // Also include isolated root people (no parents, no spouse family).
+        for (const person of familyData.people) {
+            if (hasParents(person)) continue;
+            if (person.familiesAsSpouse && person.familiesAsSpouse.length > 0) continue;
+            addSurnameForPerson(person.id);
+        }
+
+        return Object.entries(counts).sort((a, b) => {
+            if (b[1] !== a[1]) return b[1] - a[1];
+            return a[0].localeCompare(b[0]);
+        });
+    }
+
+    function updateSvgRootSurnameSelector() {
+        if (!svgRootSurnameSelect) return;
+
+        const previousValue = svgRootSurnameSelect.value;
+        const counts = getTopLevelSurnameCounts();
+
+        svgRootSurnameSelect.innerHTML = '';
+        svgRootSurnameSelect.appendChild(new Option(t('svgRootAuto'), ''));
+
+        for (const [surname, count] of counts) {
+            svgRootSurnameSelect.appendChild(
+                new Option(t('svgRootSurnameOption', { surname, count }), surname)
+            );
+        }
+
+        const hasPrevious = counts.some(([surname]) => surname === previousValue);
+        svgRootSurnameSelect.value = hasPrevious ? previousValue : '';
+    }
+
     function handleSaveAsSvgTree() {
         if (familyData.people.length === 0) {
             alert(t('noDataToExportSvg'));
@@ -1123,22 +1185,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 surname = birth.surname || '';
             }
         } else {
-            // For full tree: use the most common surname among root people (no parents)
-            const surnameCounts = {};
-            for (const p of familyData.people) {
-                if (!p.familiesAsChild || p.familiesAsChild.length === 0) {
-                    const names = p.names || [];
-                    const birth = names.find(n => n.type === 'birth') || names[0] || {};
-                    const s = birth.surname || '';
-                    if (s) surnameCounts[s] = (surnameCounts[s] || 0) + 1;
-                }
-            }
-            const sorted = Object.entries(surnameCounts).sort((a, b) => b[1] - a[1]);
-            if (sorted.length > 0) surname = sorted[0][0];
-
-            const inputSurname = prompt(t('enterClanSurname'), surname);
-            if (inputSurname === null) return; // cancelled
-            surname = inputSurname || surname;
+            // For full tree: default to most common top-level surname, unless user selected one.
+            const sorted = getTopLevelSurnameCounts();
+            const defaultSurname = sorted.length > 0 ? sorted[0][0] : '';
+            const selectedSurname = svgRootSurnameSelect ? svgRootSurnameSelect.value : '';
+            surname = selectedSurname || defaultSurname;
         }
 
         try {

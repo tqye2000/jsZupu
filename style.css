@@ -26,6 +26,7 @@ h1, h2 {
 
 .controls input[type="text"],
 .controls input[type="file"],
+.controls select,
 .controls button {
     padding: 8px;
     border: 1px solid #ccc;
