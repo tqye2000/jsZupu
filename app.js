@@ -1029,18 +1029,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(t('noDataToExport'));
             return;
         }
-        if (!cy) {
-            alert(t('graphNotInitialized'));
-            return;
-        }
-    
-        //Rescale the graph to fit the SVG
-        cy.fit(cy.nodes(), 50); // Fit the graph to the viewport with a 50px padding
-        cy.center(cy.nodes()); // Center the graph
-        cy.resize(); // Resize the graph to fit the viewport
-
-        // Generate SVG content
-        const svgContent = cy.svg({ scale: 1 });
     
         // Build table using shared helper
         const tableData = buildFamilyTableData();
@@ -1067,7 +1055,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <button onclick="window.print()">${escapeHtml(t('print'))}</button>
         </div>
         <h1>${escapeHtml(t('familyTreeTitle'))}</h1>
-        <div>${svgContent}</div>
         <table>
             <thead>
                 <tr>
