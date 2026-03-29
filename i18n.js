@@ -88,6 +88,7 @@ window.Zupu.i18n = (function () {
             scrollToExplore: 'Scroll to explore the tree',
             svgWindowTitle: '{surname} Family Tree SVG',
             svgChartTitle: '{surname} Family Tree (Nuclear Family Layout)',
+            svgStats: 'Total: {total}  |  Male: {male}  |  Female: {female}',
             // Table headers
             tableId: 'ID', tableName: 'Name', tableGender: 'Gender',
             tableBirth: 'Birth', tableDeath: 'Death',
@@ -98,7 +99,7 @@ window.Zupu.i18n = (function () {
             title: '简易族谱', heading: '简易族谱',
             loadLabel: '加载族谱:', newTree: '新建',
             searchPlaceholder: '查询姓名、日期或地点...', search: '查询',
-            save: '下载保存', addPerson: '添加新成员', print: '打印',
+            save: '下载保存', addPerson: '添新成员', print: '打印',
             list: '列表',
             svgTree: '族姓谱图', svgTreeTip: '生成严格核心家庭SVG族谱图',
             svgRootLabel: '选择族姓:',
@@ -174,6 +175,7 @@ window.Zupu.i18n = (function () {
             scrollToExplore: '滚动浏览族谱',
             svgWindowTitle: '{surname}氏族谱SVG',
             svgChartTitle: '{surname}氏家族关系图（严格核心家庭分组）',
+            svgStats: '共 {total} 人  |  男：{male}  |  女：{female}',
             // Table headers
             tableId: 'ID', tableName: '姓名', tableGender: '性别',
             tableBirth: '出生', tableDeath: '死亡',

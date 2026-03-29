@@ -216,7 +216,7 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     const BLOCK_GAP = 34;
     const ROW_GAP = 86;
     const PAD = 36;
-    const TITLE_H = 40;
+    const TITLE_H = 58;
 
     const subtreeW = {};
     const widthVisiting = new Set();
@@ -422,6 +422,18 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     svg.push('<rect width="100%" height="100%" fill="white"/>');
     svg.push(`<text x="${PAD}" y="${PAD}" font-size="18" font-weight="700" ` +
              `font-family="Arial, sans-serif">${svgEsc(Zupu.i18n.t('svgChartTitle', { surname: clanSurname }))}</text>`);
+
+    // Stats line
+    let totalCount = 0, maleCount = 0, femaleCount = 0;
+    for (const pid of includedPeople) {
+        totalCount++;
+        const g = (people[pid] || {}).gender;
+        if (g === 'male') maleCount++;
+        else if (g === 'female') femaleCount++;
+    }
+    const statsText = Zupu.i18n.t('svgStats', { total: totalCount, male: maleCount, female: femaleCount });
+    svg.push(`<text x="${PAD}" y="${PAD + 20}" font-size="12" ` +
+             `font-family="Arial, sans-serif" fill="#666">${svgEsc(statsText)}</text>`);
 
     // lines
     svg.push('<g stroke="#555" stroke-width="1.4" fill="none">');
