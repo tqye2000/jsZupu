@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="title">简易族谱</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Mobile overrides ── */
+        body {
+            margin: 0;
+            padding: 8px;
+            font-size: 15px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        h1 { font-size: 1.3em; margin: 8px 0; }
+
+        /* Controls: vertical stacking with larger touch targets */
+        .controls {
+            padding: 8px;
+            gap: 6px;
+        }
+        .controls button,
+        .controls select,
+        .controls input[type="text"],
+        .controls input[type="file"] {
+            padding: 10px 12px;
+            font-size: 14px;
+            min-height: 40px;
+            box-sizing: border-box;
+        }
+        .controls label {
+            font-size: 14px;
+        }
+        .controls input[type="file"] {
+            max-width: 180px;
+        }
+        .controls input[type="text"] {
+            flex: 1 1 120px;
+            min-width: 0;
+        }
+
+        /* Search results */
+        #searchResults {
+            font-size: 14px;
+            padding: 6px;
+        }
+
+        /* Main layout: stacked vertically */
+        .main-container {
+            flex-direction: column;
+            height: auto;
+        }
+
+        /* Graph panel: fixed height, full width */
+        #cy {
+            flex: none;
+            width: 100%;
+            height: 50vh;
+            min-height: 260px;
+            box-sizing: border-box;
+        }
+
+        /* Details panel: full width, collapsible */
+        #detailsPanel {
+            flex: none;
+            width: 100%;
+            max-height: none;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Toggle button for details panel */
+        .details-toggle {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        .details-toggle:hover {
+            background: #0056b3;
+        }
+        .details-collapsed #editForm,
+        .details-collapsed p[data-i18n="selectPrompt"] {
+            display: none;
+        }
+
+        /* Edit form: wider inputs for touch */
+        #editForm label {
+            width: auto;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        #editForm input[type="text"],
+        #editForm select {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        #editForm button {
+            padding: 12px 16px;
+            font-size: 15px;
+            min-height: 44px;
+        }
+
+        .name-group { padding: 8px; }
+
+        .form-group select {
+            padding: 10px;
+            font-size: 15px;
+        }
+
+        /* Events / notes sections */
+        .event-item select,
+        .event-item input {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            min-height: 60px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        /* Graph legend: smaller on mobile */
+        #cy::after {
+            font-size: 9px;
+            padding: 3px 6px;
+            bottom: 4px;
+            left: 4px;
+        }
+    </style>
+    <script src="lib/cytoscape.min.js"></script>
+    <script src="lib/dagre.min.js"></script>
+    <script src="lib/cytoscape-dagre.js"></script>
+    <script src="lib/cytoscape-svg.js"></script>
+    <script>window.ZUPU_LANG = 'zh';</script>
+</head>
+<body>
+    <h1 data-i18n="heading">简易族谱</h1>
+
+    <div class="controls">
+        <label for="fileInput" data-i18n="loadLabel">加载族谱:</label>
+        <input type="file" id="fileInput" accept=".json">
+        <button id="newButton" data-i18n="newTree">新建</button>
+
+        <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="查询姓名、日期或地点...">
+        <button id="searchButton" data-i18n="search">查询</button>
+
+        <button id="saveButton" data-i18n="save">下载保存</button>
+        <button id="addPersonButton" data-i18n="addPerson">添新成员</button>
+        <button id="undoButton" data-i18n-title="undoTip" title="撤销 (Ctrl+Z)" data-i18n="undo">↩ 撤销</button>
+        <button id="fitButton" data-i18n-title="fitTip" title="适应屏幕" data-i18n="fit">⛶ 适应</button>
+        <span class="controls-row-break" aria-hidden="true"></span>
+        <label for="svgRootSurnameSelect" data-i18n="svgRootLabel">选择根姓:</label>
+        <select id="svgRootSurnameSelect" data-i18n-title="svgRootTip" title="选择用于SVG根节点过滤的顶层姓氏"></select>
+        <button id="saveAsSvgTreeButton" data-i18n-title="svgTreeTip" title="生成严格核心家庭SVG族谱图" data-i18n="svgTree">根姓族谱图</button>
+        <button id="saveAsHtmlButton" data-i18n="list">列表</button>
+    </div>
+
+    <div id="searchResults"></div>
+
+    <div class="main-container">
+        <div id="cy"></div>
+
+        <div id="detailsPanel">
+            <button class="details-toggle" id="detailsToggle">详情 / 编辑 ▼</button>
+            <h2 data-i18n="detailsEdit" style="display:none;">详情 / 编辑</h2>
+            <p data-i18n="selectPrompt">(从关系图上或搜索结果中选择一人)</p>
+            <div id="editForm" class="hidden">
+                <label for="personId">ID:</label>
+                <input type="text" id="personId" readonly>
+
+                <div class="name-group">
+                    <label for="personSurname" data-i18n="surname">姓:</label>
+                    <input type="text" id="personSurname">
+                    <label for="personGivenName" data-i18n="givenName">名字:</label>
+                    <input type="text" id="personGivenName">
+                    <label for="nameType" data-i18n="nameTypeLabel">获取方式:</label>
+                    <select id="nameType">
+                        <option value="birth" data-i18n="nameBirth">出生</option>
+                        <option value="married" data-i18n="nameMarried">结婚</option>
+                        <option value="adopted" data-i18n="nameAdopted">领养</option>
+                        <option value="nickname" data-i18n="nameNickname">其他</option>
+                    </select>
+
+                    <button id="addNameButton" type="button" data-i18n="addName">添加其他名字</button>
+                </div>
+
+                <div id="additionalNames"></div>
+
+                <label for="personGender" data-i18n="genderLabel">性别:</label>
+                <select id="personGender">
+                    <option value="" data-i18n="genderSelect">选择...</option>
+                    <option value="male" data-i18n="genderMale">男</option>
+                    <option value="female" data-i18n="genderFemale">女</option>
+                    <option value="other" data-i18n="genderOther">其他</option>
+                </select>
+
+                <div class="events-section">
+                    <h3 data-i18n="eventsHeading">Events</h3>
+                    <div id="eventsContainer"></div>
+                    <button id="addEventButton" type="button" data-i18n="addEvent">添加事件</button>
+                </div>
+
+                <div class="notes-section">
+                    <h3 data-i18n="notesHeading">备注</h3>
+                    <div id="notesContainer"></div>
+                    <button id="addNoteButton" type="button" data-i18n="addNote">添加备注</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="parentFamilySelect" data-i18n="parentFamily">父母家庭:</label>
+                    <select id="parentFamilySelect"></select>
+                </div>
+                <div class="form-group">
+                    <label for="spouseFamilySelect" data-i18n="spouseFamily">配偶家庭:</label>
+                    <select id="spouseFamilySelect"></select>
+                </div>
+
+                <button id="saveChangesButton" data-i18n="saveChanges">保存</button>
+                <button id="cancelEditButton" data-i18n="cancel">取消</button>
+                <button id="deletePersonButton" data-i18n="deletePerson">删除此人</button>
+                <p id="editStatus"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application modules -->
+    <script src="i18n.js"></script>
+    <script src="utils.js"></script>
+    <script src="graph.js"></script>
+    <script src="svgtree.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Details panel toggle for mobile
+        (function () {
+            var panel = document.getElementById('detailsPanel');
+            var btn = document.getElementById('detailsToggle');
+            var collapsed = true;
+            panel.classList.add('details-collapsed');
+
+            btn.addEventListener('click', function () {
+                collapsed = !collapsed;
+                if (collapsed) {
+                    panel.classList.add('details-collapsed');
+                    btn.textContent = '详情 / 编辑 ▼';
+                } else {
+                    panel.classList.remove('details-collapsed');
+                    btn.textContent = '详情 / 编辑 ▲';
+                }
+            });
+
+            // Auto-expand when a person is selected (app.js shows editForm)
+            var observer = new MutationObserver(function () {
+                var form = document.getElementById('editForm');
+                if (form && !form.classList.contains('hidden') && collapsed) {
+                    collapsed = false;
+                    panel.classList.remove('details-collapsed');
+                    btn.textContent = '详情 / 编辑 ▲';
+                    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+            var form = document.getElementById('editForm');
+            if (form) {
+                observer.observe(form, { attributes: true, attributeFilter: ['class'] });
+            }
+        })();
+    </script>
+</body>
+</html>
