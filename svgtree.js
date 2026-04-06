@@ -32,6 +32,26 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         else if (ev.type === 'death') deathYear[pref] = yr;
     }
 
+    // Build divorced-family set from events
+    const divorcedFamilies = new Set();
+    for (const ev of events) {
+        if (ev.type === 'divorce') {
+            if (ev.familyRef) {
+                divorcedFamilies.add(ev.familyRef);
+            } else if (ev.personRef && people[ev.personRef]) {
+                // If divorce is on a person (not a family), mark their
+                // spouse families — unambiguous only when there is one.
+                const fams = people[ev.personRef].familiesAsSpouse || [];
+                if (fams.length === 1) {
+                    divorcedFamilies.add(fams[0]);
+                } else {
+                    // Multiple marriages: mark all (best effort without familyRef)
+                    fams.forEach(fid => divorcedFamilies.add(fid));
+                }
+            }
+        }
+    }
+
     // Build notes lookup: personId -> [noteText, ...]
     const notes = data.notes || [];
     const notesById = {};
@@ -454,6 +474,7 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     // all partner-group members at each Y level, sort left→right, and connect
     // adjacent nodes.  This produces  B—A—E  instead of  B—A  +  A———E.
     const marriageNeighbours = new Map(); // pid → Set of partner pids (same row)
+    const divorcedPairs = new Set();        // 'pidA|pidB' where A<B alphabetically
     const parentGroups = [];
     const posPeople = new Set(Object.keys(pos));
 
@@ -467,6 +488,15 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
             if (!marriageNeighbours.has(p)) marriageNeighbours.set(p, new Set());
             for (const q of partners) {
                 if (q !== p) marriageNeighbours.get(p).add(q);
+            }
+        }
+
+        // Track divorced partner pairs
+        if (divorcedFamilies.has(fid) && partners.length >= 2) {
+            for (const p of partners) {
+                for (const q of partners) {
+                    if (p < q) divorcedPairs.add(p + '|' + q);
+                }
             }
         }
 
@@ -540,7 +570,18 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         const [ax, ay] = pos[a];
         const [bx]     = pos[b];
         const yline = ay + NODE_H / 2;
-        svg.push(`<line x1="${ax + NODE_W}" y1="${yline}" x2="${bx}" y2="${yline}"/>`);
+        // Check if this edge is between divorced partners
+        const pairKey = a < b ? (a + '|' + b) : (b + '|' + a);
+        const isDivorced = divorcedPairs.has(pairKey);
+        if (isDivorced) {
+            svg.push(`<line x1="${ax + NODE_W}" y1="${yline}" x2="${bx}" y2="${yline}" stroke-dasharray="4,3" stroke="#999"/>`);
+            // Draw ╱╱ divorce mark at midpoint
+            const mx = (ax + NODE_W + bx) / 2;
+            svg.push(`<line x1="${mx - 3}" y1="${yline - 5}" x2="${mx + 1}" y2="${yline + 5}" stroke="#C62828" stroke-width="1.6"/>`);
+            svg.push(`<line x1="${mx + 1}" y1="${yline - 5}" x2="${mx + 5}" y2="${yline + 5}" stroke="#C62828" stroke-width="1.6"/>`);
+        } else {
+            svg.push(`<line x1="${ax + NODE_W}" y1="${yline}" x2="${bx}" y2="${yline}"/>`);
+        }
     }
 
     for (const [fmx, fmy, children] of parentGroups) {
