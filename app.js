@@ -96,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editStatus = document.getElementById('editStatus');
     const parentFamilySelect = document.getElementById('parentFamilySelect');
     const spouseFamilySelect = document.getElementById('spouseFamilySelect');
+    const spouseFamiliesContainer = document.getElementById('spouseFamiliesContainer');
+    const addSpouseFamilyButton = document.getElementById('addSpouseFamilyButton');
     const nameTypeSelect = document.getElementById('nameType');
     const addNameButton = document.getElementById('addNameButton');
     const additionalNamesDiv = document.getElementById('additionalNames');
@@ -125,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addNameButton.addEventListener('click', addNameField);
     addEventButton.addEventListener('click', () => addEventField());
     addNoteButton.addEventListener('click', () => addNoteField());
+    addSpouseFamilyButton.addEventListener('click', handleAddSpouseFamily);
     saveAsHtmlButton.addEventListener('click', handleSaveAsHtml);
     if (saveAsSvgTreeButton) saveAsSvgTreeButton.addEventListener('click', handleSaveAsSvgTree);
     if (undoButton) undoButton.addEventListener('click', performUndo);
@@ -565,7 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle family relationships
         const selectedParentFamily = parentFamilySelect.value;
-        const selectedSpouseFamily = spouseFamilySelect.value;
 
         // Update parent family relationship
         if (selectedParentFamily) {
@@ -585,39 +587,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Handle spouse family relationship
-        if (selectedSpouseFamily) {
-            // Remove person from any existing spouse families first
-            familyData.families.forEach(f => {
-                if (f.partners) {
-                    f.partners = f.partners.filter(id => id !== person.id);
-                }
-            });
-            person.familiesAsSpouse = []; // Reset spouse families
+        // Handle spouse family relationships (multiple marriages)
+        const spouseFamilyItems = spouseFamiliesContainer.querySelectorAll('.spouse-family-item');
+        const newSpouseFamilyIds = [];
 
-            if (selectedSpouseFamily === 'new') {
-                // Create new family
+        // Remove person from ALL existing spouse families first
+        familyData.families.forEach(f => {
+            if (f.partners) {
+                f.partners = f.partners.filter(id => id !== person.id);
+            }
+        });
+
+        // Process each marriage item in the container
+        spouseFamilyItems.forEach(item => {
+            const fid = item.dataset.familyId;
+            if (fid.startsWith('new_')) {
+                // Create a new family for this marriage
                 const familyId = generateId('f');
-                const spouseFamily = {
+                const newFamily = {
                     id: familyId,
                     partners: [person.id],
                     children: [],
                     eventRefs: [],
                     noteRefs: []
                 };
-                familyData.families.push(spouseFamily);
-                person.familiesAsSpouse = [familyId];
+                familyData.families.push(newFamily);
+                newSpouseFamilyIds.push(familyId);
             } else {
-                const spouseFamily = findFamily(selectedSpouseFamily);
-                if (spouseFamily) {
-                    spouseFamily.partners = spouseFamily.partners || [];
-                    if (!spouseFamily.partners.includes(person.id)) {
-                        spouseFamily.partners.push(person.id);
+                const family = findFamily(fid);
+                if (family) {
+                    family.partners = family.partners || [];
+                    if (!family.partners.includes(person.id)) {
+                        family.partners.push(person.id);
                     }
-                    person.familiesAsSpouse = [selectedSpouseFamily]; // Replace instead of push
+                    newSpouseFamilyIds.push(fid);
+                }
+            }
+        });
+
+        // Also process the dropdown if user selected something but didn't click "Add"
+        const pendingSpouseFamily = spouseFamilySelect.value;
+        if (pendingSpouseFamily) {
+            if (pendingSpouseFamily === 'new') {
+                const familyId = generateId('f');
+                const newFamily = {
+                    id: familyId,
+                    partners: [person.id],
+                    children: [],
+                    eventRefs: [],
+                    noteRefs: []
+                };
+                familyData.families.push(newFamily);
+                newSpouseFamilyIds.push(familyId);
+            } else if (!newSpouseFamilyIds.includes(pendingSpouseFamily)) {
+                const family = findFamily(pendingSpouseFamily);
+                if (family) {
+                    family.partners = family.partners || [];
+                    if (!family.partners.includes(person.id)) {
+                        family.partners.push(person.id);
+                    }
+                    newSpouseFamilyIds.push(pendingSpouseFamily);
                 }
             }
         }
+
+        person.familiesAsSpouse = newSpouseFamilyIds;
 
         // Handle notes
         const oldNoteRefs = person.noteRefs || [];
@@ -828,10 +862,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear existing options
         parentFamilySelect.innerHTML = '<option value="">' + escapeHtml(t('selectParentFamily')) + '</option>';
         spouseFamilySelect.innerHTML = '<option value="">' + escapeHtml(t('selectSpouseFamily')) + '</option>';
+        spouseFamiliesContainer.innerHTML = '';
 
         // Add "Create New Family" option for spouse selector
         const newFamilyOption = new Option(t('createNewFamily'), 'new');
         spouseFamilySelect.appendChild(newFamilyOption);
+
+        // Get current spouse family IDs
+        const currentSpouseFamilies = person ? (person.familiesAsSpouse || []) : [];
 
         // Add existing families as options
         familyData.families.forEach(family => {
@@ -852,22 +890,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 parentFamilySelect.appendChild(option);
             }
 
-            // Add to spouse family selector if person isn't a child
-            if (!children.includes(person?.id)) {
+            // If this is one of the person's current spouse families, show in container
+            if (currentSpouseFamilies.includes(family.id)) {
+                addSpouseFamilyItem(family.id, familyLabel);
+            }
+            // Otherwise add to spouse family dropdown (if person isn't a child of it)
+            else if (!children.includes(person?.id)) {
                 const option = new Option(familyLabel, family.id);
                 spouseFamilySelect.appendChild(option);
             }
         });
 
-        // If editing existing person, select their current families
+        // If editing existing person, select their current parent family
         if (person) {
             if (person.familiesAsChild?.[0]) {
                 parentFamilySelect.value = person.familiesAsChild[0];
             }
-            if (person.familiesAsSpouse?.[0]) {
-                spouseFamilySelect.value = person.familiesAsSpouse[0];
-            }
         }
+    }
+
+    /** Add a spouse family item to the container (shown as a current marriage). */
+    function addSpouseFamilyItem(familyId, label) {
+        const div = document.createElement('div');
+        div.className = 'spouse-family-item';
+        div.dataset.familyId = familyId;
+        div.innerHTML = `
+            <span>${escapeHtml(label)}</span>
+            <button type="button" class="remove-spouse-family-button">\u00d7</button>
+        `;
+        div.querySelector('.remove-spouse-family-button').addEventListener('click', () => {
+            div.remove();
+        });
+        spouseFamiliesContainer.appendChild(div);
+    }
+
+    /** Handle "Add Marriage" button click. */
+    function handleAddSpouseFamily() {
+        const selected = spouseFamilySelect.value;
+        if (!selected) return;
+
+        if (selected === 'new') {
+            // Add a "new family" placeholder
+            addSpouseFamilyItem('new_' + Date.now(), t('createNewFamily'));
+        } else {
+            // Check if already in the list
+            if (spouseFamiliesContainer.querySelector('[data-family-id="' + selected + '"]')) return;
+            // Get label from the dropdown option
+            const option = spouseFamilySelect.querySelector('option[value="' + selected + '"]');
+            const label = option ? option.textContent : selected;
+            addSpouseFamilyItem(selected, label);
+            // Remove from dropdown to prevent duplicate adds
+            if (option) option.remove();
+        }
+
+        // Reset dropdown
+        spouseFamilySelect.value = '';
     }
 
     function addNameField(nameData = null) {

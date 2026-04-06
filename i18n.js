@@ -48,7 +48,8 @@ window.Zupu.i18n = (function () {
             parentFamily: 'Parent Family:', spouseFamily: 'Spouse Family:',
             selectParentFamily: 'Select Parent Family...',
             selectSpouseFamily: 'Select/Create Spouse Family...',
-            createNewFamily: 'Create New Family...',
+            createNewFamily: '+ Create New Family',
+            addMarriage: '+ Add Marriage',
             familyLabel: 'Family: {names}', familyLabelId: 'Family {id}',
             // Buttons
             saveChanges: 'Save Changes', cancel: 'Cancel',
@@ -135,7 +136,8 @@ window.Zupu.i18n = (function () {
             parentFamily: '父母家庭:', spouseFamily: '配偶家庭:',
             selectParentFamily: '选择父母家庭...',
             selectSpouseFamily: '选择/新建配偶家庭...',
-            createNewFamily: '新建家庭...',
+            createNewFamily: '+ 新建家庭',
+            addMarriage: '+ 添加婚姻',
             familyLabel: '家庭：{names}', familyLabelId: '家庭 {id}',
             // Buttons
             saveChanges: '保存', cancel: '取消',

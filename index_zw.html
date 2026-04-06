@@ -87,8 +87,12 @@
                     <select id="parentFamilySelect"></select>
                 </div>
                 <div class="form-group">
-                    <label for="spouseFamilySelect" data-i18n="spouseFamily">配偶家庭:</label>
-                    <select id="spouseFamilySelect"></select>
+                    <label data-i18n="spouseFamily">配偶家庭:</label>
+                    <div id="spouseFamiliesContainer"></div>
+                    <div class="spouse-family-add">
+                        <select id="spouseFamilySelect"></select>
+                        <button id="addSpouseFamilyButton" type="button" data-i18n="addMarriage">+ 添加婚姻</button>
+                    </div>
                 </div>
 
                 <button id="saveChangesButton" data-i18n="saveChanges">保存</button>

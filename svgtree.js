@@ -192,13 +192,13 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         if (gmin) { for (const p of Object.keys(gen)) gen[p] -= gmin; }
     }
 
-    // 4) Primary descendant family per child
-    const primaryDescFam = {};
+    // 4) Descendant families per child (ALL marriages, not just the first)
+    const descFams = {};
     const childlessSpouseFam = {};
     for (const c of includedPeople) {
         const cFams = (spouseFamsOf[c] || []).filter(fid => (families[fid].children || []).length > 0);
         if (cFams.length > 0) {
-            primaryDescFam[c] = cFams.sort()[0];
+            descFams[c] = cFams.sort();
         } else {
             const cSpouseFams = (spouseFamsOf[c] || []).filter(fid =>
                 incFams.has(fid) && (families[fid].partners || []).length >= 2
@@ -245,10 +245,12 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
 
         const slotWidths = [];
         for (const c of children) {
-            const df = primaryDescFam[c];
+            const dfs = (descFams[c] || []).filter(df => df !== fid && incFams.has(df));
             const minW = childSlotMinWidth(c, fid);
-            if (df && df !== fid && incFams.has(df)) {
-                slotWidths.push(Math.max(minW, familyWidth(df)));
+            if (dfs.length > 0) {
+                const totalDfW = dfs.map(df => familyWidth(df)).reduce((a, b) => a + b, 0)
+                                + Math.max(0, dfs.length - 1) * BLOCK_GAP;
+                slotWidths.push(Math.max(minW, totalDfW));
             } else {
                 slotWidths.push(minW);
             }
@@ -281,6 +283,7 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     // 6) Place families recursively
     const pos = {};
     const famMidBottom = {};
+    const posLocked = new Set(); // partners already placed by a descendant family
 
     function placeFamily(fid, x0, y0, guard) {
         if (!guard) guard = new Set();
@@ -293,18 +296,53 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         const children = (fam.children || []).filter(c => includedPeople.has(c));
         const totalW = subtreeW[fid] || NODE_W;
 
-        // partners row centered
+        // partners row positioning
         const pw = partners.length * NODE_W + Math.max(0, partners.length - 1) * PARTNER_GAP;
-        const px = x0 + (totalW - pw) / 2;
         const py = y0;
 
-        for (let i = 0; i < partners.length; i++) {
-            pos[partners[i]] = [px + i * (NODE_W + PARTNER_GAP), py];
+        // Check if any partner is already locked at a known position
+        let anchorPartner = null;
+        for (const p of partners) {
+            if (posLocked.has(p) && pos[p]) {
+                anchorPartner = p;
+                break;
+            }
         }
 
+        if (anchorPartner) {
+            // Find the rightmost already-positioned neighbour of the anchor
+            // (across ALL their spouse families) to avoid placing on top of
+            // an existing partner from another marriage.
+            let rightmostX = pos[anchorPartner][0];
+            for (const sfid of (spouseFamsOf[anchorPartner] || [])) {
+                for (const sp of (families[sfid].partners || []).filter(p => includedPeople.has(p))) {
+                    if (pos[sp] && pos[sp][1] === py) {
+                        rightmostX = Math.max(rightmostX, pos[sp][0]);
+                    }
+                }
+            }
+            // Place unlocked, not-yet-positioned partners after the rightmost
+            let nextX = rightmostX + NODE_W + PARTNER_GAP;
+            for (const p of partners) {
+                if (p !== anchorPartner && !pos[p]) {
+                    pos[p] = [nextX, py];
+                    nextX += NODE_W + PARTNER_GAP;
+                }
+            }
+        } else {
+            const px = x0 + (totalW - pw) / 2;
+            for (let i = 0; i < partners.length; i++) {
+                pos[partners[i]] = [px + i * (NODE_W + PARTNER_GAP), py];
+            }
+        }
+
+        // Compute famMidBottom from actual partner positions
+        const actualXs = partners.map(p => pos[p] ? pos[p][0] : null).filter(x => x !== null);
         let mx;
-        if (partners.length > 0) {
-            mx = (px + px + pw) / 2;
+        if (actualXs.length > 0) {
+            const leftEdge = Math.min(...actualXs);
+            const rightEdge = Math.max(...actualXs) + NODE_W;
+            mx = (leftEdge + rightEdge) / 2;
         } else {
             mx = x0 + totalW / 2;
         }
@@ -315,41 +353,60 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
 
         const childSlots = [];
         for (const c of children) {
-            const df = primaryDescFam[c];
+            const dfs = (descFams[c] || []).filter(df => df !== fid && incFams.has(df));
             const minW = childSlotMinWidth(c, fid);
             let sw;
-            if (df && df !== fid && incFams.has(df)) {
-                sw = Math.max(minW, subtreeW[df]);
+            if (dfs.length > 0) {
+                const totalDfW = dfs.map(df => subtreeW[df] || NODE_W).reduce((a, b) => a + b, 0)
+                                + Math.max(0, dfs.length - 1) * BLOCK_GAP;
+                sw = Math.max(minW, totalDfW);
             } else {
                 sw = minW;
             }
-            childSlots.push([c, df, sw]);
+            childSlots.push([c, dfs, sw]);
         }
 
         const cwTotal = childSlots.reduce((acc, s) => acc + s[2], 0) + Math.max(0, childSlots.length - 1) * CHILD_GAP;
         let cx = x0 + (totalW - cwTotal) / 2;
 
-        for (const [c, df, sw] of childSlots) {
+        for (const [c, dfs, sw] of childSlots) {
             const childX = cx + (sw - NODE_W) / 2;
             pos[c] = [childX, childY];
 
-            if (df && df !== fid && incFams.has(df) && !guard.has(df)) {
-                const dpartners = (families[df].partners || []).filter(p => includedPeople.has(p));
-                let idx = dpartners.indexOf(c);
-                if (idx < 0) idx = 0;
+            const validDfs = dfs.filter(df => !guard.has(df));
+            if (validDfs.length > 0) {
+                // Place all descendant families side by side
+                let dfX = cx;
+                for (let di = 0; di < validDfs.length; di++) {
+                    const df = validDfs[di];
+                    const dtotal = subtreeW[df] || NODE_W;
 
-                const dpw = dpartners.length * NODE_W + Math.max(0, dpartners.length - 1) * PARTNER_GAP;
-                const dtotal = subtreeW[df];
-                const dpx = (dtotal - dpw) / 2;
-                const targetX = dpx + idx * (NODE_W + PARTNER_GAP);
+                    if (di === 0) {
+                        // First family: align child within partner row
+                        const dpartners = (families[df].partners || []).filter(p => includedPeople.has(p));
+                        let idx = dpartners.indexOf(c);
+                        if (idx < 0) idx = 0;
 
-                let descX0 = childX - targetX;
-                const slotLeft = cx;
-                const slotRight = cx + sw;
-                if (descX0 < slotLeft) descX0 = slotLeft;
-                if (descX0 + dtotal > slotRight) descX0 = slotRight - dtotal;
+                        const dpw = dpartners.length * NODE_W + Math.max(0, dpartners.length - 1) * PARTNER_GAP;
+                        const dpx = (dtotal - dpw) / 2;
+                        const targetX = dpx + idx * (NODE_W + PARTNER_GAP);
 
-                placeFamily(df, descX0, childY, guard);
+                        let descX0 = childX - targetX;
+                        const slotLeft = cx;
+                        const slotRight = cx + sw;
+                        if (descX0 < slotLeft) descX0 = slotLeft;
+                        if (descX0 + dtotal > slotRight) descX0 = slotRight - dtotal;
+
+                        placeFamily(df, descX0, childY, guard);
+                        // Lock child position so additional families don't move them
+                        posLocked.add(c);
+                        dfX = descX0 + dtotal + BLOCK_GAP;
+                    } else {
+                        // Additional families: place next to previous block
+                        placeFamily(df, dfX, childY, guard);
+                        dfX += dtotal + BLOCK_GAP;
+                    }
+                }
 
             } else if (c in childlessSpouseFam) {
                 const csfid = childlessSpouseFam[c];
@@ -378,6 +435,10 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     for (const rf of rootFams) {
         if (!(rf in famMidBottom)) {
             placeFamily(rf, xCursor, yStart);
+            // Lock all partners so that subsequent root families sharing
+            // a person position the new spouse adjacent, not on top.
+            const rfPartners = (families[rf].partners || []).filter(p => includedPeople.has(p));
+            rfPartners.forEach(p => posLocked.add(p));
             xCursor += subtreeW[rf] + BLOCK_GAP;
         }
     }
@@ -387,7 +448,12 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     }
 
     // 7) Build edges
-    const marriageEdges = [];
+    //
+    // Marriage edges: instead of per-family partner pairs (which can overlap
+    // when a person has multiple marriages sharing the same row), we collect
+    // all partner-group members at each Y level, sort left→right, and connect
+    // adjacent nodes.  This produces  B—A—E  instead of  B—A  +  A———E.
+    const marriageNeighbours = new Map(); // pid → Set of partner pids (same row)
     const parentGroups = [];
     const posPeople = new Set(Object.keys(pos));
 
@@ -396,15 +462,48 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         const partners = (fam.partners || []).filter(p => posPeople.has(p));
         const children = (fam.children || []).filter(c => posPeople.has(c));
 
-        if (partners.length >= 2) {
-            for (let i = 0; i < partners.length - 1; i++) {
-                marriageEdges.push([partners[i], partners[i + 1]]);
+        // Record partner adjacency (bidirectional)
+        for (const p of partners) {
+            if (!marriageNeighbours.has(p)) marriageNeighbours.set(p, new Set());
+            for (const q of partners) {
+                if (q !== p) marriageNeighbours.get(p).add(q);
             }
         }
 
         if (fid in famMidBottom && children.length > 0) {
             const [fmx, fmy] = famMidBottom[fid];
             parentGroups.push([fmx, fmy, children]);
+        }
+    }
+
+    // Build connected partner groups and emit edges between adjacent nodes
+    const marriageEdges = [];
+    const visitedPartners = new Set();
+    for (const [pid] of marriageNeighbours) {
+        if (visitedPartners.has(pid)) continue;
+        // BFS to find the whole connected group on the same Y row
+        const group = [];
+        const q = [pid];
+        while (q.length > 0) {
+            const cur = q.pop();
+            if (visitedPartners.has(cur)) continue;
+            if (!pos[cur]) continue;
+            visitedPartners.add(cur);
+            group.push(cur);
+            const neighbours = marriageNeighbours.get(cur);
+            if (neighbours) {
+                for (const nb of neighbours) {
+                    if (!visitedPartners.has(nb) && pos[nb] && pos[nb][1] === pos[cur][1]) {
+                        q.push(nb);
+                    }
+                }
+            }
+        }
+        if (group.length < 2) continue;
+        // Sort left-to-right by x position
+        group.sort((a, b) => pos[a][0] - pos[b][0]);
+        for (let i = 0; i < group.length - 1; i++) {
+            marriageEdges.push([group[i], group[i + 1]]);
         }
     }
 
@@ -439,7 +538,7 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
     svg.push('<g stroke="#555" stroke-width="1.4" fill="none">');
     for (const [a, b] of marriageEdges) {
         const [ax, ay] = pos[a];
-        const [bx, by] = pos[b];
+        const [bx]     = pos[b];
         const yline = ay + NODE_H / 2;
         svg.push(`<line x1="${ax + NODE_W}" y1="${yline}" x2="${bx}" y2="${yline}"/>`);
     }
@@ -450,8 +549,10 @@ window.Zupu.buildTreeSvg = function (data, clanSurname, startPersonId) {
         svg.push(`<line x1="${fmx}" y1="${fmy}" x2="${fmx}" y2="${jy}"/>`);
 
         const centers = children.map(c => [pos[c][0] + NODE_W / 2, pos[c][1]]);
-        const minCx = Math.min(...centers.map(c => c[0]));
-        const maxCx = Math.max(...centers.map(c => c[0]));
+        // Include fmx so the horizontal rail connects to the parent drop-line
+        // even when the children are offset (e.g. remarriage layout).
+        const minCx = Math.min(fmx, ...centers.map(c => c[0]));
+        const maxCx = Math.max(fmx, ...centers.map(c => c[0]));
         svg.push(`<line x1="${minCx}" y1="${jy}" x2="${maxCx}" y2="${jy}"/>`);
 
         for (const [ccx, ccy] of centers) {
